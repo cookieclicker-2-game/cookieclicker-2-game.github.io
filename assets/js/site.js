@@ -202,7 +202,9 @@
 })();
 
 // =========================
-// Block Clicker / New games (home + game)
+// Block dưới khung chơi (home + game)
+// Home: 12 game = 6 clicker + 6 idle
+// Trang game: 12 clicker mới nhất
 // =========================
 (function () {
   function createGridCard(game) {
@@ -210,6 +212,7 @@
     a.href = `/${game.slug}.html`;
     a.className = "game-card";
 
+    // Ảnh vuông
     const thumb = document.createElement("div");
     thumb.className = "game-card-thumb";
 
@@ -220,6 +223,7 @@
 
     thumb.appendChild(img);
 
+    // Body chỉ có tên game, không meta/category
     const body = document.createElement("div");
     body.className = "game-card-body";
 
@@ -227,14 +231,7 @@
     titleEl.className = "game-card-title";
     titleEl.textContent = game.title;
 
-    const meta = document.createElement("div");
-    meta.className = "game-card-meta";
-    meta.textContent = Array.isArray(game.categories)
-      ? game.categories.join(", ")
-      : "";
-
     body.appendChild(titleEl);
-    body.appendChild(meta);
 
     a.appendChild(thumb);
     a.appendChild(body);
@@ -253,27 +250,50 @@
     container.appendChild(frag);
   }
 
+  // Lấy 6 clicker + 6 idle không cần theo thứ tự
+  function getMixedClickerIdle() {
+    // 6 game clicker
+    const clickers =
+      typeof getClickerGames === "function"
+        ? getClickerGames()
+        : GAMES.filter(
+            (g) =>
+              Array.isArray(g.categories) &&
+              g.categories.includes("clicker")
+          );
+
+    // 6 game idle
+    let idle = [];
+    if (typeof getGamesByCategory === "function") {
+      idle = getGamesByCategory("idle", 1, 100).items || [];
+    } else {
+      idle = GAMES.filter(
+        (g) =>
+          Array.isArray(g.categories) && g.categories.includes("idle")
+      );
+    }
+
+    const pickClicker = clickers.slice(0, 6);
+    const pickIdle = idle.slice(0, 6);
+
+    return pickClicker.concat(pickIdle).slice(0, 12);
+  }
+
   function initBlocks() {
     if (typeof GAMES === "undefined") return;
 
     const body = document.body;
     const pageType = body.dataset.pageType || "";
+    const slug = body.dataset.slug;
 
-    // Home: clickerGrid + newGamesGrid
+    // HOME: 12 game (6 clicker + 6 idle)
     if (pageType === "home") {
-      if (typeof getClickerGames === "function") {
-        const clickers = getClickerGames(12);
-        renderGrid("clickerGrid", clickers);
-      }
-      if (typeof getNewGames === "function") {
-        const newest = getNewGames(12);
-        renderGrid("newGamesGrid", newest);
-      }
+      const mixed = getMixedClickerIdle();
+      renderGrid("clickerGrid", mixed);
       return;
     }
 
-    // Trang game: block #clickerGrid = clicker games (12)
-    const slug = body.dataset.slug;
+    // TRANG GAME: 12 clicker mới nhất
     if (slug && typeof getClickerGames === "function") {
       if (document.getElementById("clickerGrid")) {
         const clickers = getClickerGames(12);
