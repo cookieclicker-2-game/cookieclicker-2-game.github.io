@@ -1,485 +1,720 @@
-// site.js - logic chung cho toàn bộ site Cookie Clicker 2
-// Ghi chú (VN): GAMES & helper (getHotGames, getClickerGames, ...) được khai báo trong games-data.js.
+// /assets/js/site.js
 
-// Bọc toàn bộ trong IIFE để tránh rò rỉ biến global
+// =========================
+// Helper: Toast thông báo
+// =========================
 (function () {
-  // ===============================
-  // Helper: đọc & set theme
-  // ===============================
+  let toastEl = null;
+  let toastTimeout = null;
+
+  function ensureToastElement() {
+    if (toastEl) return toastEl;
+    toastEl = document.createElement("div");
+    toastEl.id = "siteToast";
+    toastEl.className = "site-toast"; // style trong CSS
+    document.body.appendChild(toastEl);
+    return toastEl;
+  }
+
+  window.showToast = function (message) {
+    const el = ensureToastElement();
+    el.textContent = message;
+
+    el.classList.add("show");
+    if (toastTimeout) clearTimeout(toastTimeout);
+
+    toastTimeout = setTimeout(() => {
+      el.classList.remove("show");
+    }, 2500);
+  };
+})();
+
+// =========================
+// Theme (Dark / Light)
+// =========================
+(function () {
+  const body = document.body;
+  const toggleBtn = document.getElementById("themeToggle");
   const THEME_KEY = "theme";
 
+  // Ghi chú (VI): mặc định dark nếu chưa có theme trong localStorage
   function applyTheme(theme) {
-    const body = document.body;
-    body.classList.remove("dark", "light");
-    body.classList.add(theme);
+    if (theme === "light") {
+      body.classList.remove("dark");
+      body.classList.add("light");
+    } else {
+      body.classList.remove("light");
+      body.classList.add("dark");
+      theme = "dark";
+    }
+    localStorage.setItem(THEME_KEY, theme);
   }
 
   function initTheme() {
-    const saved = localStorage.getItem(THEME_KEY);
-    const theme = saved === "light" || saved === "dark" ? saved : "dark";
-    applyTheme(theme);
+    let stored = localStorage.getItem(THEME_KEY);
+    if (!stored) stored = "dark";
+    applyTheme(stored);
+  }
 
-    const toggle = document.getElementById("themeToggle");
-    if (toggle) {
-      const iconSpan = toggle.querySelector(".icon");
-      function updateLabel(t) {
-        if (!iconSpan) return;
-        iconSpan.textContent = t === "dark" ? "🌙" : "☀️";
+  function initToggle() {
+    if (!toggleBtn) return;
+    toggleBtn.addEventListener("click", function () {
+      const current = localStorage.getItem(THEME_KEY) || "dark";
+      const next = current === "dark" ? "light" : "dark";
+      applyTheme(next);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    initTheme();
+    initToggle();
+  });
+})();
+
+// =========================
+// Search autocomplete
+// =========================
+(function () {
+  const MAX_RESULTS = 10;
+
+  function normalize(str) {
+    return (str || "").toLowerCase();
+  }
+
+  function renderSearchResults(resultsContainer, games) {
+    resultsContainer.innerHTML = "";
+    if (!games || games.length === 0) {
+      resultsContainer.classList.remove("show");
+      return;
+    }
+    const frag = document.createDocumentFragment();
+
+    games.forEach((g) => {
+      const a = document.createElement("a");
+      a.href = `/${g.slug}.html`;
+      a.className = "search-result-item";
+      a.textContent = g.title;
+
+      if (Array.isArray(g.categories) && g.categories.length > 0) {
+        const span = document.createElement("span");
+        span.className = "search-result-category";
+        span.textContent = ` [${g.categories[0]}]`;
+        a.appendChild(span);
       }
-      updateLabel(theme);
 
-      toggle.addEventListener("click", function () {
-        const current = document.body.classList.contains("light") ? "light" : "dark";
-        const next = current === "dark" ? "light" : "dark";
-        applyTheme(next);
-        localStorage.setItem(THEME_KEY, next);
-        updateLabel(next);
-      });
-    }
+      frag.appendChild(a);
+    });
+
+    resultsContainer.appendChild(frag);
+    resultsContainer.classList.add("show");
   }
 
-  // ===============================
-  // Helper: toast thông báo
-  // ===============================
-  function getToastEl() {
-    let toast = document.querySelector(".site-toast");
-    if (!toast) {
-      toast = document.createElement("div");
-      toast.className = "site-toast";
-      document.body.appendChild(toast);
-    }
-    return toast;
-  }
-
-  function showToast(message) {
-    const toast = getToastEl();
-    toast.textContent = message;
-    toast.classList.add("show");
-    setTimeout(function () {
-      toast.classList.remove("show");
-    }, 2500);
-  }
-
-  // Expose nhẹ cho các file khác nếu cần
-  window.showToast = showToast;
-
-  // ===============================
-  // Header search (autocomplete)
-  // ===============================
   function initSearch() {
     const input = document.getElementById("searchInput");
     const results = document.getElementById("searchResults");
     const wrapper = document.getElementById("searchWrapper");
-    const games = Array.isArray(window.GAMES) ? window.GAMES : [];
 
-    if (!input || !results || !wrapper) return;
-
-    function clearResults() {
-      results.innerHTML = "";
-      results.classList.remove("visible");
-    }
-
-    function renderResults(list) {
-      if (!list.length) {
-        clearResults();
-        return;
-      }
-      results.innerHTML = "";
-      list.forEach(function (game) {
-        const a = document.createElement("a");
-        a.href = "/" + game.slug + ".html"; // Ghi chú dev: file .html, sau có thể rewrite slug sạch
-        a.className = "search-result-item";
-
-        const thumb = document.createElement("img");
-        thumb.className = "search-result-thumb";
-        thumb.loading = "lazy";
-        thumb.src = game.thumbnail || "/assets/thumbs/cookie-clicker-2.png";
-        thumb.alt = game.title + " thumbnail";
-
-        const textWrap = document.createElement("div");
-        textWrap.className = "search-result-text";
-
-        const titleEl = document.createElement("div");
-        titleEl.className = "search-result-title";
-        titleEl.textContent = game.title;
-
-        const metaEl = document.createElement("div");
-        metaEl.className = "search-result-meta";
-        metaEl.textContent = (game.categories || []).join(" · ");
-
-        textWrap.appendChild(titleEl);
-        textWrap.appendChild(metaEl);
-
-        a.appendChild(thumb);
-        a.appendChild(textWrap);
-
-        results.appendChild(a);
-      });
-      results.classList.add("visible");
-    }
+    if (!input || !results || !wrapper || typeof GAMES === "undefined") return;
 
     input.addEventListener("input", function () {
-      const q = input.value.trim().toLowerCase();
-      if (!q || !games.length) {
-        clearResults();
+      const q = normalize(input.value);
+      if (!q) {
+        // Ghi chú (VI): Nếu muốn hiển thị gợi ý mặc định, có thể đưa getHotGames ở đây.
+        results.innerHTML = "";
+        results.classList.remove("show");
         return;
       }
-      const filtered = games.filter(function (g) {
-        return g.title.toLowerCase().includes(q);
-      }).slice(0, 10);
-      renderResults(filtered);
+
+      const matched = GAMES.filter((g) =>
+        normalize(g.title).includes(q)
+      ).slice(0, MAX_RESULTS);
+
+      renderSearchResults(results, matched);
     });
 
-    // Ẩn dropdown khi click ngoài
+    // Click ngoài search để đóng dropdown
     document.addEventListener("click", function (e) {
       if (!wrapper.contains(e.target)) {
-        clearResults();
+        results.classList.remove("show");
       }
     });
   }
 
-  // ===============================
-  // Breadcrumb
-  // ===============================
-  function initBreadcrumb() {
-    const breadcrumbEl = document.getElementById("breadcrumb");
-    if (!breadcrumbEl) return;
+  document.addEventListener("DOMContentLoaded", initSearch);
+})();
 
-    const slug = document.body.dataset.slug || "";
-    const primaryCat = document.body.dataset.primaryCategory || "";
-    const games = Array.isArray(window.GAMES) ? window.GAMES : [];
+// =========================
+// Hot games sidebar
+// =========================
+(function () {
+  function createHotItem(game) {
+    const a = document.createElement("a");
+    a.href = `/${game.slug}.html`;
+    a.className = "hot-item";
 
-    // Map category → tên & URL
-    const catMap = {
-      clicker: { name: "Clicker Games", url: "/clicker.games" },
-      idle: { name: "Idle Games", url: "/idle.games" },
-      io: { name: "IO Games", url: "/io.games" },
-      hot: { name: "Hot Games", url: "/hot.games" }
-    };
+    const thumbWrap = document.createElement("div");
+    thumbWrap.className = "hot-thumb-wrapper";
 
-    // Trang home: breadcrumb đơn giản
-    if (!slug || slug === "home") {
-      breadcrumbEl.innerHTML = "<span>Home</span>";
-      return;
-    }
+    const img = document.createElement("img");
+    img.src = game.thumbnail;
+    img.loading = "lazy";
+    img.alt = `${game.title} thumbnail`;
+    img.className = "hot-thumb";
 
-    // Nếu là trang category (clicker-games / idle-games / io-games / hot-games)
-    if (slug === "clicker-games" || slug === "idle-games" || slug === "io-games" || slug === "hot-games") {
-      const cat = slug.replace("-games", ""); // clicker / idle / io / hot
-      const conf = catMap[cat];
-      if (conf) {
-        breadcrumbEl.innerHTML =
-          '<a href="/">Home</a> &gt; <span>' + conf.name + "</span>";
-      }
-      return;
-    }
+    thumbWrap.appendChild(img);
 
-    // Trang game đơn lẻ
-    let gameTitle = "";
-    if (games.length) {
-      const found = games.find(function (g) { return g.slug === slug; });
-      if (found) gameTitle = found.title;
-    }
-    if (!gameTitle) {
-      const h1 = document.querySelector(".game-title, h1");
-      gameTitle = h1 ? h1.textContent.trim() : slug;
-    }
+    const info = document.createElement("div");
+    info.className = "hot-info";
 
-    const parts = [];
+    const titleEl = document.createElement("div");
+    titleEl.className = "hot-title";
+    titleEl.textContent = game.title;
 
-    // Home
-    parts.push('<a href="/">Home</a>');
+    const meta = document.createElement("div");
+    meta.className = "hot-meta";
+    meta.textContent = Array.isArray(game.categories)
+      ? game.categories.join(", ")
+      : "";
 
-    // Category chính nếu có
-    if (primaryCat && catMap[primaryCat]) {
-      const c = catMap[primaryCat];
-      parts.push('&gt; <a href="' + c.url + '">' + c.name + "</a>");
-    }
+    info.appendChild(titleEl);
+    info.appendChild(meta);
 
-    // Game
-    parts.push("&gt; <span>" + gameTitle + "</span>");
+    a.appendChild(thumbWrap);
+    a.appendChild(info);
 
-    breadcrumbEl.innerHTML = parts.join(" ");
+    return a;
   }
 
-  // ===============================
-  // Hot games sidebar & clicker grid
-  // ===============================
-  function initHotGames() {
+  function renderHotGames() {
     const container = document.getElementById("hotGames");
-    if (!container) return;
-    if (typeof window.getHotGames !== "function") {
-      container.innerHTML = "<p style='font-size:13px; opacity:0.9;'>Hot games will appear here soon.</p>";
-      return;
-    }
-    const list = window.getHotGames(8);
-    if (!list.length) {
-      container.innerHTML = "<p style='font-size:13px; opacity:0.9;'>No hot games yet.</p>";
-      return;
-    }
+    if (!container || typeof getHotGames !== "function") return;
 
+    const games = getHotGames(8);
     container.innerHTML = "";
-    list.forEach(function (g) {
-      const a = document.createElement("a");
-      a.href = "/" + g.slug + ".html";
-      a.className = "hot-item";
-
-      const img = document.createElement("img");
-      img.className = "hot-thumb";
-      img.loading = "lazy";
-      img.src = g.thumbnail || "/assets/thumbs/cookie-clicker-2.png";
-      img.alt = g.title + " thumbnail";
-
-      const textWrap = document.createElement("div");
-      textWrap.className = "hot-text";
-
-      const nameEl = document.createElement("div");
-      nameEl.className = "hot-name";
-      nameEl.textContent = g.title;
-
-      const metaEl = document.createElement("div");
-      metaEl.className = "hot-meta";
-      metaEl.textContent = (g.categories || []).join(" · ");
-
-      textWrap.appendChild(nameEl);
-      textWrap.appendChild(metaEl);
-
-      a.appendChild(img);
-      a.appendChild(textWrap);
-      container.appendChild(a);
+    const frag = document.createDocumentFragment();
+    games.forEach((g) => {
+      frag.appendChild(createHotItem(g));
     });
+    container.appendChild(frag);
   }
 
-  function initClickerGrid() {
-    const grid = document.getElementById("clickerGrid");
-    if (!grid) return;
-    if (typeof window.getClickerGames !== "function") {
-      grid.innerHTML = "<p style='font-size:13px; opacity:0.9;'>Clicker games will be loaded soon.</p>";
-      return;
-    }
+  document.addEventListener("DOMContentLoaded", renderHotGames);
+})();
 
-    const list = window.getClickerGames(12);
-    if (!list.length) {
-      grid.innerHTML = "<p style='font-size:13px; opacity:0.9;'>No clicker games yet.</p>";
-      return;
-    }
+// =========================
+// Block Clicker / New games (home + game)
+// =========================
+(function () {
+  function createGridCard(game) {
+    const a = document.createElement("a");
+    a.href = `/${game.slug}.html`;
+    a.className = "game-card";
 
-    grid.innerHTML = "";
-    list.forEach(function (g) {
-      const a = document.createElement("a");
-      a.href = "/" + g.slug + ".html";
-      a.className = "game-card";
+    const thumb = document.createElement("div");
+    thumb.className = "game-card-thumb";
 
-      const img = document.createElement("img");
-      img.className = "game-card-thumb";
-      img.loading = "lazy";
-      img.src = g.thumbnail || "/assets/thumbs/cookie-clicker-2.png";
-      img.alt = g.title + " thumbnail";
+    const img = document.createElement("img");
+    img.src = game.thumbnail;
+    img.loading = "lazy";
+    img.alt = `${game.title} thumbnail`;
 
-      const body = document.createElement("div");
-      body.className = "game-card-body";
+    thumb.appendChild(img);
 
-      const titleEl = document.createElement("div");
-      titleEl.className = "game-card-title";
-      titleEl.textContent = g.title;
+    const body = document.createElement("div");
+    body.className = "game-card-body";
 
-      const metaEl = document.createElement("div");
-      metaEl.className = "game-card-meta";
-      metaEl.textContent = (g.categories || []).join(" · ");
+    const titleEl = document.createElement("h3");
+    titleEl.className = "game-card-title";
+    titleEl.textContent = game.title;
 
-      body.appendChild(titleEl);
-      body.appendChild(metaEl);
+    const meta = document.createElement("div");
+    meta.className = "game-card-meta";
+    meta.textContent = Array.isArray(game.categories)
+      ? game.categories.join(", ")
+      : "";
 
-      a.appendChild(img);
-      a.appendChild(body);
-      grid.appendChild(a);
-    });
+    body.appendChild(titleEl);
+    body.appendChild(meta);
+
+    a.appendChild(thumb);
+    a.appendChild(body);
+
+    return a;
   }
 
-  // ===============================
-  // Category page (Clicker / Idle / IO / Hot) + phân trang
-  // ===============================
-  function initCategoryPage() {
-    const slug = document.body.dataset.slug || "";
-    const grid = document.getElementById("categoryGrid");
-    const pagination = document.getElementById("pagination");
-    if (!grid || !pagination) return;
-    if (typeof window.getGamesByCategory !== "function") return;
+  function renderGrid(containerId, games) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = "";
+    const frag = document.createDocumentFragment();
+    games.forEach((g) => {
+      frag.appendChild(createGridCard(g));
+    });
+    container.appendChild(frag);
+  }
 
-    // Map slug → cat + basePath + title
-    const map = {
-      "clicker-games": { cat: "clicker", basePath: "/clicker.games", title: "Clicker Games" },
-      "idle-games": { cat: "idle", basePath: "/idle.games", title: "Idle Games" },
-      "io-games": { cat: "io", basePath: "/io.games", title: "IO Games" },
-      "hot-games": { cat: "hot", basePath: "/hot.games", title: "Hot Games" }
-    };
+  function initBlocks() {
+    if (typeof GAMES === "undefined") return;
 
-    const conf = map[slug];
-    if (!conf) return;
+    const body = document.body;
+    const pageType = body.dataset.pageType || "";
 
-    const params = new URLSearchParams(window.location.search);
-    const pageParam = parseInt(params.get("page") || "1", 10) || 1;
-    const perPage = 20;
-
-    const result = window.getGamesByCategory(conf.cat, pageParam, perPage);
-
-    // Render grid
-    if (!result.items.length) {
-      grid.innerHTML = "<p style='font-size:14px; opacity:0.9;'>No games found in this category.</p>";
-    } else {
-      grid.innerHTML = "";
-      result.items.forEach(function (g) {
-        const a = document.createElement("a");
-        a.href = "/" + g.slug + ".html";
-        a.className = "game-card";
-
-        const img = document.createElement("img");
-        img.className = "game-card-thumb";
-        img.loading = "lazy";
-        img.src = g.thumbnail || "/assets/thumbs/cookie-clicker-2.png";
-        img.alt = g.title + " thumbnail";
-
-        const body = document.createElement("div");
-        body.className = "game-card-body";
-
-        const titleEl = document.createElement("div");
-        titleEl.className = "game-card-title";
-        titleEl.textContent = g.title;
-
-        const metaEl = document.createElement("div");
-        metaEl.className = "game-card-meta";
-        metaEl.textContent = (g.categories || []).join(" · ");
-
-        body.appendChild(titleEl);
-        body.appendChild(metaEl);
-
-        a.appendChild(img);
-        a.appendChild(body);
-        grid.appendChild(a);
-      });
-    }
-
-    // Render pagination
-    const totalPages = result.totalPages;
-    const current = result.currentPage;
-
-    if (totalPages <= 1) {
-      pagination.innerHTML = "";
+    // Home: clickerGrid + newGamesGrid
+    if (pageType === "home") {
+      if (typeof getClickerGames === "function") {
+        const clickers = getClickerGames(12);
+        renderGrid("clickerGrid", clickers);
+      }
+      if (typeof getNewGames === "function") {
+        const newest = getNewGames(12);
+        renderGrid("newGamesGrid", newest);
+      }
       return;
     }
 
-    function createPageLink(label, page, isActive, isDisabled) {
-      const href = conf.basePath + (page > 1 ? "?page=" + page : "");
-      const el = document.createElement(isDisabled ? "span" : "a");
-      el.textContent = label;
-      if (!isDisabled) {
-        el.href = href;
+    // Trang game: block #clickerGrid = clicker games (12)
+    const slug = body.dataset.slug;
+    if (slug && typeof getClickerGames === "function") {
+      if (document.getElementById("clickerGrid")) {
+        const clickers = getClickerGames(12);
+        renderGrid("clickerGrid", clickers);
       }
-      if (isActive) {
-        el.classList.add("active");
-      }
-      return el;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", initBlocks);
+})();
+
+// =========================
+// Category pages (clicker / idle / io / hot)
+// =========================
+(function () {
+  function createGridCard(game) {
+    const a = document.createElement("a");
+    a.href = `/${game.slug}.html`;
+    a.className = "game-card";
+
+    const thumb = document.createElement("div");
+    thumb.className = "game-card-thumb";
+
+    const img = document.createElement("img");
+    img.src = game.thumbnail;
+    img.loading = "lazy";
+    img.alt = `${game.title} thumbnail`;
+
+    thumb.appendChild(img);
+
+    const body = document.createElement("div");
+    body.className = "game-card-body";
+
+    const titleEl = document.createElement("h3");
+    titleEl.className = "game-card-title";
+    titleEl.textContent = game.title;
+
+    const meta = document.createElement("div");
+    meta.className = "game-card-meta";
+    meta.textContent = Array.isArray(game.categories)
+      ? game.categories.join(", ")
+      : "";
+
+    body.appendChild(titleEl);
+    body.appendChild(meta);
+
+    a.appendChild(thumb);
+    a.appendChild(body);
+
+    return a;
+  }
+
+  function renderCategoryGrid(items) {
+    const container = document.getElementById("categoryGrid");
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (!items || items.length === 0) {
+      const p = document.createElement("p");
+      p.textContent = "No games found in this category.";
+      container.appendChild(p);
+      return;
     }
 
-    pagination.innerHTML = "";
+    const frag = document.createDocumentFragment();
+    items.forEach((g) => frag.appendChild(createGridCard(g)));
+    container.appendChild(frag);
+  }
+
+  function renderPagination(cat, meta) {
+    const pagEl = document.getElementById("pagination");
+    if (!pagEl) return;
+    pagEl.innerHTML = "";
+
+    const totalPages = meta.totalPages || 1;
+    const currentPage = meta.currentPage || 1;
+    if (totalPages <= 1) return;
+
+    const ul = document.createElement("div");
+    ul.className = "pagination-inner";
+
+    function createPageLink(label, page, disabled, active) {
+      const a = document.createElement("a");
+      a.href = `/` + cat + `.games?page=` + page;
+      a.textContent = label;
+      a.className = "pagination-link";
+      if (disabled) a.classList.add("is-disabled");
+      if (active) a.classList.add("is-active");
+      return a;
+    }
 
     // Prev
-    if (current > 1) {
-      pagination.appendChild(createPageLink("Prev", current - 1, false, false));
+    if (currentPage > 1) {
+      ul.appendChild(createPageLink("Prev", currentPage - 1, false, false));
     }
 
-    // Các số trang
-    for (var i = 1; i <= totalPages; i++) {
-      pagination.appendChild(createPageLink(String(i), i, i === current, false));
+    for (let p = 1; p <= totalPages; p++) {
+      ul.appendChild(createPageLink(String(p), p, false, p === currentPage));
     }
 
     // Next
-    if (current < totalPages) {
-      pagination.appendChild(createPageLink("Next", current + 1, false, false));
+    if (currentPage < totalPages) {
+      ul.appendChild(createPageLink("Next", currentPage + 1, false, false));
+    }
+
+    pagEl.appendChild(ul);
+  }
+
+  function initCategory() {
+    const body = document.body;
+    const pageType = body.dataset.pageType;
+    if (pageType !== "category") return;
+
+    if (typeof getGamesByCategory !== "function") return;
+
+    const cat = body.dataset.category;
+    if (!cat) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const page = parseInt(params.get("page") || "1", 10) || 1;
+    const perPage = 20;
+
+    const result = getGamesByCategory(cat, page, perPage);
+    if (!result) return;
+
+    renderCategoryGrid(result.items || []);
+    renderPagination(cat, result);
+  }
+
+  document.addEventListener("DOMContentLoaded", initCategory);
+})();
+
+// =========================
+// Breadcrumb
+// =========================
+(function () {
+  function initBreadcrumb() {
+    const el = document.getElementById("breadcrumb");
+    if (!el) return;
+
+    const body = document.body;
+    const pageType = body.dataset.pageType || "";
+    const slug = body.dataset.slug;
+    const primaryCategory = body.dataset.primaryCategory;
+    const baseUrl = "https://cookieclicker-2-game.github.io";
+
+    el.innerHTML = "";
+
+    function createCrumb(label, href, isCurrent) {
+      const span = document.createElement(isCurrent ? "span" : "a");
+      span.className = "breadcrumb-item";
+      if (!isCurrent && href) {
+        span.href = href;
+      }
+      span.textContent = label;
+      return span;
+    }
+
+    // Home
+    const homeLink = createCrumb("Home", "/", false);
+    el.appendChild(homeLink);
+
+    // Trang chủ: chỉ Home
+    if (pageType === "home") {
+      return;
+    }
+
+    // Category pages
+    if (pageType === "category") {
+      const cat = body.dataset.category;
+      let label = "";
+      if (cat === "clicker") label = "Clicker Games";
+      else if (cat === "idle") label = "Idle Games";
+      else if (cat === "io") label = "IO Games";
+      else if (cat === "hot") label = "Hot Games";
+
+      if (label) {
+        const sep = document.createElement("span");
+        sep.className = "breadcrumb-separator";
+        sep.textContent = ">";
+        el.appendChild(sep);
+
+        const catSpan = createCrumb(label, null, true);
+        el.appendChild(catSpan);
+      }
+      return;
+    }
+
+    // Trang game chi tiết
+    if (slug) {
+      // Category chính
+      let cat = primaryCategory || "";
+      let catLabel = "";
+      let catHref = "";
+
+      if (cat === "clicker") {
+        catLabel = "Clicker Games";
+        catHref = "/clicker.games";
+      } else if (cat === "idle") {
+        catLabel = "Idle Games";
+        catHref = "/idle.games";
+      } else if (cat === "io") {
+        catLabel = "IO Games";
+        catHref = "/io.games";
+      } else if (cat === "hot") {
+        catLabel = "Hot Games";
+        catHref = "/hot.games";
+      }
+
+      if (catLabel && catHref) {
+        const sep1 = document.createElement("span");
+        sep1.className = "breadcrumb-separator";
+        sep1.textContent = ">";
+        el.appendChild(sep1);
+
+        const catLink = createCrumb(catLabel, catHref, false);
+        el.appendChild(catLink);
+      }
+
+      // Tên game
+      if (typeof getGameBySlug === "function") {
+        const game = getGameBySlug(slug);
+        if (game) {
+          const sep2 = document.createElement("span");
+          sep2.className = "breadcrumb-separator";
+          sep2.textContent = ">";
+          el.appendChild(sep2);
+
+          const current = createCrumb(game.title, null, true);
+          el.appendChild(current);
+        }
+      }
     }
   }
 
-  // ===============================
-  // Button: share & fullscreen & comment
-  // ===============================
+  document.addEventListener("DOMContentLoaded", initBreadcrumb);
+})();
+
+// =========================
+// Nút Chia sẻ, Phóng to, Bình luận
+// =========================
+(function () {
+  function handleShare() {
+    const url = window.location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard
+        .writeText(url)
+        .then(() => {
+          showToast("Đã copy link trò chơi!");
+        })
+        .catch(() => {
+          showToast("Không copy được link, hãy copy thủ công.");
+        });
+    } else {
+      // Fallback đơn giản
+      window.prompt("Copy link trò chơi:", url);
+    }
+  }
+
+  function handleFullscreen() {
+    const iframe = document.querySelector(".game-frame");
+    if (!iframe) {
+      showToast("Không tìm thấy khung game để phóng to.");
+      return;
+    }
+
+    const doc = document;
+    const isFullscreen =
+      doc.fullscreenElement ||
+      doc.webkitFullscreenElement ||
+      doc.mozFullScreenElement ||
+      doc.msFullscreenElement;
+
+    if (!isFullscreen) {
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.webkitRequestFullscreen) {
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.mozRequestFullScreen) {
+        iframe.mozRequestFullScreen();
+      } else if (iframe.msRequestFullscreen) {
+        iframe.msRequestFullscreen();
+      } else {
+        showToast("Trình duyệt không hỗ trợ fullscreen.");
+      }
+    } else {
+      if (doc.exitFullscreen) {
+        doc.exitFullscreen();
+      } else if (doc.webkitExitFullscreen) {
+        doc.webkitExitFullscreen();
+      } else if (doc.mozCancelFullScreen) {
+        doc.mozCancelFullScreen();
+      } else if (doc.msExitFullscreen) {
+        doc.msExitFullscreen();
+      }
+    }
+  }
+
+  function handleCommentScroll() {
+    const comment = document.getElementById("comment-section");
+    if (comment) {
+      comment.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+    const desc = document.querySelector(".game-description");
+    if (desc) {
+      desc.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  }
+
   function initGameButtons() {
     const shareBtn = document.getElementById("btnShare");
-    if (shareBtn) {
-      shareBtn.addEventListener("click", function () {
-        const url = window.location.href;
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(url).then(function () {
-            showToast("Đã copy link trò chơi!");
-          }).catch(function () {
-            showToast("Không thể copy link, hãy copy thủ công.");
-          });
-        } else {
-          showToast("Trình duyệt không hỗ trợ copy tự động.");
-        }
-      });
-    }
-
-    const fullBtn = document.getElementById("btnFullscreen");
-    if (fullBtn) {
-      fullBtn.addEventListener("click", function () {
-        const frame = document.querySelector(".game-frame");
-        if (!frame) {
-          showToast("Không tìm thấy khung game để phóng to.");
-          return;
-        }
-        const doc = document;
-        const isFull = doc.fullscreenElement || doc.webkitFullscreenElement;
-
-        if (!isFull) {
-          const el = frame;
-          if (el.requestFullscreen) el.requestFullscreen();
-          else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-          else {
-            showToast("Trình duyệt không hỗ trợ fullscreen.");
-          }
-        } else {
-          if (doc.exitFullscreen) doc.exitFullscreen();
-          else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
-        }
-      });
-    }
-
+    const fsBtn = document.getElementById("btnFullscreen");
     const commentBtn = document.getElementById("btnComment");
+
+    if (shareBtn) {
+      shareBtn.addEventListener("click", handleShare);
+    }
+    if (fsBtn) {
+      fsBtn.addEventListener("click", handleFullscreen);
+    }
     if (commentBtn) {
-      commentBtn.addEventListener("click", function () {
-        // Ghi chú dev: sau này nếu có khu vực comment, thêm id="comment-section" rồi scroll đến đó.
-        const commentSection = document.getElementById("comment-section");
-        if (commentSection) {
-          commentSection.scrollIntoView({ behavior: "smooth", block: "start" });
-        } else {
-          showToast("Comment section will be added soon.");
-        }
-      });
+      commentBtn.addEventListener("click", handleCommentScroll);
     }
   }
 
-  // ===============================
-  // Footer năm hiện tại
-  // ===============================
-  function initFooterYear() {
-    const spans = document.querySelectorAll("span[data-year]");
-    const year = String(new Date().getFullYear());
-    spans.forEach(function (el) {
-      el.textContent = year;
+  document.addEventListener("DOMContentLoaded", initGameButtons);
+})();
+
+// =========================
+// Recently played (localStorage)
+// =========================
+(function () {
+  const STORAGE_KEY = "recently_played";
+  const MAX_ITEMS = 20;
+
+  function addCurrentGameToHistory() {
+    const body = document.body;
+    const slug = body.dataset.slug;
+    if (!slug || typeof getGameBySlug !== "function") return;
+
+    const game = getGameBySlug(slug);
+    if (!game) return;
+
+    let list = [];
+    try {
+      list = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch (e) {
+      list = [];
+    }
+
+    // Xóa nếu trùng slug
+    list = list.filter((item) => item.slug !== slug);
+
+    list.unshift({
+      slug: slug,
+      ts: Date.now()
     });
+
+    if (list.length > MAX_ITEMS) {
+      list = list.slice(0, MAX_ITEMS);
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
   }
 
-  // ===============================
-  // Ready
-  // ===============================
+  function renderRecentlyPlayed() {
+    const section = document.getElementById("recentlyPlayedSection");
+    const container = document.getElementById("recentlyPlayed");
+    if (!section || !container || typeof getGameBySlug !== "function") return;
+
+    let list = [];
+    try {
+      list = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch (e) {
+      list = [];
+    }
+
+    if (list.length === 0) {
+      section.style.display = "none";
+      return;
+    }
+
+    section.style.display = "";
+    container.innerHTML = "";
+    const frag = document.createDocumentFragment();
+
+    list.slice(0, 8).forEach((item) => {
+      const game = getGameBySlug(item.slug);
+      if (!game) return;
+
+      const a = document.createElement("a");
+      a.href = `/${game.slug}.html`;
+      a.className = "hot-item"; // tái dùng style hot-list
+
+      const thumbWrap = document.createElement("div");
+      thumbWrap.className = "hot-thumb-wrapper";
+
+      const img = document.createElement("img");
+      img.src = game.thumbnail;
+      img.loading = "lazy";
+      img.alt = `${game.title} thumbnail`;
+      img.className = "hot-thumb";
+
+      thumbWrap.appendChild(img);
+
+      const info = document.createElement("div");
+      info.className = "hot-info";
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "hot-title";
+      titleEl.textContent = game.title;
+
+      const meta = document.createElement("div");
+      meta.className = "hot-meta";
+      meta.textContent = Array.isArray(game.categories)
+        ? game.categories.join(", ")
+        : "";
+
+      info.appendChild(titleEl);
+      info.appendChild(meta);
+
+      a.appendChild(thumbWrap);
+      a.appendChild(info);
+
+      frag.appendChild(a);
+    });
+
+    container.appendChild(frag);
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
-    initTheme();
-    initFooterYear();
-    initSearch();
-    initBreadcrumb();
-    initHotGames();
-    initClickerGrid();
-    initCategoryPage();
-    initGameButtons();
+    // Thêm vào history nếu là trang game chi tiết
+    if (document.body.dataset.slug) {
+      addCurrentGameToHistory();
+    }
+    // Render block "Tiếp tục chơi" trên trang chủ (nếu có)
+    if (document.body.dataset.pageType === "home") {
+      renderRecentlyPlayed();
+    }
   });
 })();
