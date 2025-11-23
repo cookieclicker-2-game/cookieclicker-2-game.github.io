@@ -829,4 +829,124 @@ body.light .pagination a {
 .game-card-body {
   width: 100%;
 }
+/* Ẩn breadcrumb trên trang chủ (bỏ chữ Home) */
+body[data-page-type="home"] #breadcrumb {
+  display: none;
+}
+
+/* Layout: cho main rộng hơn, sidebar Game hot hẹp hơn */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px; /* main : sidebar */
+  gap: 20px;
+}
+
+/* Sidebar Game hot không chiếm quá nhiều chiều cao */
+.sidebar .card:first-child {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* Thu nhỏ chữ trong danh sách hot một chút */
+.hot-list img {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.hot-info .hot-title {
+  font-size: 0.85rem;
+}
+
+/* Khung chơi game fit hơn với game nhúng */
+.game-frame-wrapper {
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.game-frame-inner {
+  position: relative;
+  height: 640px;                 /* cao cố định trên desktop */
+  max-height: calc(100vh - 220px);
+  padding-top: 0;                 /* bỏ tỉ lệ 16:9 cũ */
+}
+
+.game-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Mobile: giảm chiều cao khung chơi */
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;   /* mobile: sidebar xuống dưới */
+  }
+
+  .game-frame-inner {
+    height: 420px;
+    max-height: 65vh;
+  }
+}
+
+/* Grid game dưới màn hình – 5 card / hàng (desktop), ảnh vuông */
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .game-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .game-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.game-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 14px;
+  padding: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.game-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Ảnh vuông */
+.game-card-thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.game-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Tên game ở dưới, không tag */
+.game-card-title {
+  font-size: 0.9rem;
+  margin: 0;
+  text-align: center;
+}
 
