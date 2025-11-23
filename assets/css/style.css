@@ -924,16 +924,18 @@ body.light .site-toast {
 }
 /* ===== SIDEBAR GAME HOT – CARD ẢNH LỚN + BADGE HOT ===== */
 
+/* Sidebar thu gọn vừa nội dung */
 .sidebar {
   width: 260px;
   max-width: 260px;
 }
 
+/* Card chứa danh sách hot */
 .sidebar .card {
   padding: 16px 12px;
 }
 
-/* Danh sách card */
+/* Danh sách hot */
 .hot-list {
   display: flex;
   flex-direction: column;
@@ -945,7 +947,7 @@ body.light .site-toast {
   display: block;
   border-radius: 18px;
   overflow: hidden;
-  background: #000;
+  background: #000000;
   text-decoration: none;
   position: relative;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
@@ -970,7 +972,7 @@ body.light .site-toast {
   display: block;
 }
 
-/* Badge HOT đỏ */
+/* Badge HOT đỏ góc trên trái */
 .hot-badge {
   position: absolute;
   top: 8px;
