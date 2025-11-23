@@ -960,4 +960,84 @@ body.light .site-toast {
     justify-content: flex-start;
   }
 }
+/* ============================
+   FIX SIDEBAR GAME HOT
+============================ */
+
+/* Tiêu đề "Game Hot" */
+.sidebar-title {
+  font-size: 20px !important;      /* to hơn */
+  font-weight: 700 !important;
+  text-align: center !important;   /* căn giữa */
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+/* Thu gọn chiều rộng sidebar theo đúng nội dung */
+.sidebar {
+  width: 260px !important;   /* từ ~320px → 260px gọn vừa */
+  padding: 0;
+}
+
+/* Card bao ngoài */
+.sidebar .card {
+  padding: 16px;
+}
+
+/* List hot item */
+.hot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Một dòng game hot */
+.hot-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-radius: 10px;
+  transition: background 0.2s ease-out;
+}
+
+/* Hover */
+.hot-item:hover {
+  background: rgba(30, 64, 175, 0.3);
+}
+
+/* Ảnh game */
+.hot-item img {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* Text */
+.hot-text, .hot-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+/* Tên game */
+.hot-name,
+.hot-info .hot-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Ẩn category game (cate game) */
+.hot-meta {
+  display: none !important;
+}
+
+/* Nếu có chữ "hot" thì vẫn giữ */
+.hot-text span,
+.hot-info span {
+  font-size: 12px;
+  opacity: 0.6;
+}
 
