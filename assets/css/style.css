@@ -638,6 +638,17 @@ body.light .btn-ghost {
   opacity: 0.6;
 }
 
+/* Khối quảng cáo giữa các game hot (sau này chèn) */
+.hot-ad-block {
+  border-radius: 18px;
+  padding: 10px 12px;
+  background: radial-gradient(circle at top left, #111827, #020617);
+  border: 1px dashed rgba(248, 250, 252, 0.3);
+  color: #e5e7eb;
+  font-size: 13px;
+  text-align: center;
+}
+
 /* ===============================
    Grid game bên dưới màn chơi
 ================================= */
@@ -923,20 +934,20 @@ body.light .site-toast {
   }
 }
 
-/* ===== SIDEBAR GAME HOT – CARD ẢNH LỚN + BADGE HOT (CHỈ #hotGames) ===== */
+/* ===== SIDEBAR GAME HOT – 6 GAME XOAY VÒNG TRONG 10 GAME ===== */
 
-/* Chỉ áp dụng cho Game hot, KHÔNG ảnh hưởng "Tiếp tục chơi" */
-#hotGames.hot-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+/* Container hot games */
+#hotGames {
+  position: relative;
+  min-height: 140px; /* tránh nhảy layout */
 }
 
-/* Mỗi game hot = 1 card ảnh lớn */
+/* Mỗi game hot là 1 khối card */
 #hotGames .hot-item {
   position: relative;
-  display: block;
+  display: block;          /* hiển thị mặc định, JS sẽ ẩn bằng .is-hidden */
   padding: 0;
+  margin-bottom: 10px;
   border-radius: 18px;
   overflow: hidden;
   background: #000;
@@ -945,33 +956,40 @@ body.light .site-toast {
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
 }
 
+/* Game bị ẩn bởi rotator */
+#hotGames .hot-item.is-hidden {
+  display: none !important;
+}
+
 #hotGames .hot-item:hover {
   transform: translateY(-3px);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
 }
 
-/* Bọc ảnh */
+/* Ảnh vuông full card */
 #hotGames .hot-thumb-wrapper {
   display: block;
 }
 
-/* Ảnh game: full width 16:9 */
 #hotGames .hot-thumb,
 #hotGames .hot-item img {
   width: 100% !important;
   height: auto !important;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1 / 1 !important; /* vuông */
   object-fit: cover;
   border-radius: 0 !important;
   background: transparent !important;
 }
 
-/* Ẩn text info ở Game hot (chỉ còn card ảnh) */
-#hotGames .hot-info {
+/* Ẩn text info/chữ "hot" bên dưới trong khối Game hot */
+#hotGames .hot-info,
+#hotGames .hot-info *,
+#hotGames .hot-text,
+#hotGames .hot-text * {
   display: none !important;
 }
 
-/* Badge HOT đỏ góc trên trái (dùng pseudo-element, không cần sửa HTML/JS) */
+/* Badge HOT đỏ góc trên trái */
 #hotGames .hot-item::before {
   content: "HOT";
   position: absolute;
