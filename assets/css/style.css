@@ -762,4 +762,71 @@ body.light .pagination a {
   transform: translateY(-1px);
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.8);
 }
+/* ===== Grid game bên dưới màn hình chơi ===== */
+
+/* Mặc định mobile: 2 cột */
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* Tablet: 3 cột */
+@media (min-width: 768px) {
+  .game-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Desktop: 5 cột */
+@media (min-width: 1024px) {
+  .game-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* Card game dạng dọc: ảnh vuông + tên game bên dưới */
+.game-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 14px;
+  padding: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.game-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Ảnh vuông */
+.game-card-thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;  /* vuông 1:1 */
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.game-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Tên game bên dưới ảnh */
+.game-card-title {
+  font-size: 0.9rem;
+  margin: 0;
+  text-align: center;
+}
+
+/* Không dùng meta/tag cho block này */
+.game-card-body {
+  width: 100%;
+}
 
