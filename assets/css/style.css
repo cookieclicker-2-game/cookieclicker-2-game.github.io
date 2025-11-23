@@ -1,7 +1,7 @@
 /* ===============================
    Global styles - Cookie Clicker 2 site
-   Ghi chú: UI text có thể là tiếng Việt,
-   nội dung SEO (H1, description) là tiếng Anh
+   Ghi chú: UI text = tiếng Việt,
+   nội dung SEO (H1, description) = tiếng Anh
 ================================= */
 
 /* Biến màu chung */
@@ -23,7 +23,7 @@
   --transition-fast: 0.2s ease-out;
 }
 
-/* Mặc định body.dark (theme tối) */
+/* Mặc định theme tối */
 body {
   margin: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -34,7 +34,7 @@ body {
   flex-direction: column;
 }
 
-/* Theme light */
+/* Theme sáng */
 body.light {
   background-color: var(--bg-light);
   color: var(--text-dark);
@@ -50,11 +50,12 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Container chính */
+/* Container chính toàn trang */
 .page-container {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 96px 16px 32px; /* chừa chỗ cho header sticky */
+  padding: 16px 12px 40px;
+  box-sizing: border-box;
 }
 
 /* ===============================
@@ -87,7 +88,7 @@ body.light .site-header {
 }
 
 .site-header-inner {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 10px 16px;
   display: flex;
@@ -136,7 +137,11 @@ body.light .site-header {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .nav-link span.dot {
@@ -182,7 +187,11 @@ body.light .site-header {
   padding: 7px 30px 7px 28px;
   font-size: 14px;
   outline: none;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 body.light .search-input {
@@ -296,7 +305,11 @@ body.light .search-result-item:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 body.light .theme-toggle {
@@ -317,22 +330,22 @@ body.light .theme-toggle {
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); /* game 3 phần, sidebar 1 phần */
+  gap: 12px;
+  align-items: flex-start;
 }
 
-/* Game + description (cột trái) */
 .main-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* Sidebar (cột phải) */
 .sidebar {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-width: 320px;
 }
 
 /* Breadcrumb */
@@ -353,6 +366,11 @@ body.light .theme-toggle {
   text-decoration: underline;
 }
 
+/* Ẩn breadcrumb trên trang chủ (bỏ chữ Home) */
+body[data-page-type="home"] #breadcrumb {
+  display: none;
+}
+
 /* Card chung */
 .card {
   border-radius: var(--radius-xl);
@@ -367,46 +385,33 @@ body.light .card {
   box-shadow: 0 18px 40px rgba(148, 163, 184, 0.35);
 }
 
-/* Header game */
-.game-header {
+/* ===============================
+   Game section
+================================= */
+
+.game-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-
-.game-title {
-  font-size: 26px;
-  margin: 0;
-}
-
-.game-meta {
-  font-size: 13px;
-  opacity: 0.9;
-  display: flex;
-  flex-wrap: wrap;
   gap: 12px;
 }
 
-.game-meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+/* Khung game full-width trong cột chính, 16:9 */
+.game-frame-outer {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
 }
 
-/* Khung game iframe */
 .game-frame-wrapper {
   position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid rgba(148, 163, 184, 0.5);
   background: radial-gradient(circle at top left, #0b1120, #020617);
   box-shadow: 0 24px 65px rgba(15, 23, 42, 0.9);
-}
-
-.game-frame-inner {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 */
 }
 
 .game-frame {
@@ -415,15 +420,74 @@ body.light .card {
   width: 100%;
   height: 100%;
   border: 0;
-  border-radius: 16px;
 }
 
-/* Nút hành động game */
-.game-actions {
-  margin-top: 10px;
+/* Mobile: cho cao hơn chút */
+@media (max-width: 768px) {
+  .game-frame-wrapper {
+    padding-top: 62%;
+  }
+}
+
+/* H1 + meta + nút trên 1 hàng (desktop) */
+.game-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: nowrap;
+  margin-top: 8px;
+}
+
+.game-header-left {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.game-title {
+  margin: 0;
+  padding: 0;
+  font-size: 1.8rem;
+  line-height: 1.2;
+  text-align: left !important;
+}
+
+.game-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.game-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Link category trong meta */
+.game-meta-link {
+  color: #facc15;
+  text-decoration: none;
+}
+
+.game-meta-link:hover {
+  text-decoration: underline;
+}
+
+/* Nút bên phải */
+.game-actions {
+  margin-top: 0;
+}
+
+.game-actions-right {
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;
 }
 
 /* Button base */
@@ -438,7 +502,11 @@ body.light .card {
   gap: 6px;
   background: rgba(15, 23, 42, 0.9);
   color: #e5e7eb;
-  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .btn span.icon {
@@ -469,7 +537,23 @@ body.light .btn-ghost {
   background: #ffffff;
 }
 
-/* Sidebar hot games */
+/* BẮT BUỘC: xoá mọi text-align center trong khối game */
+.game-section h1,
+.game-section,
+.game-header-left,
+.game-header-row {
+  text-align: left !important;
+}
+
+/* ===============================
+   Sidebar: game hot
+================================= */
+
+.sidebar .card:first-child {
+  max-height: none;
+  overflow: visible;
+}
+
 .sidebar-title {
   font-size: 16px;
   font-weight: 600;
@@ -489,7 +573,10 @@ body.light .btn-ghost {
   border-radius: 12px;
   cursor: pointer;
   text-decoration: none;
-  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .hot-item:hover {
@@ -503,23 +590,26 @@ body.light .hot-item:hover {
   box-shadow: 0 15px 30px rgba(148, 163, 184, 0.45);
 }
 
-.hot-thumb {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+.hot-thumb,
+.hot-list img {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   object-fit: cover;
   flex-shrink: 0;
   background: rgba(15, 23, 42, 0.7);
 }
 
-.hot-text {
+.hot-text,
+.hot-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
   font-size: 13px;
 }
 
-.hot-name {
+.hot-name,
+.hot-info .hot-title {
   font-weight: 500;
 }
 
@@ -528,241 +618,9 @@ body.light .hot-item:hover {
   opacity: 0.85;
 }
 
-/* Grid clicker games giống Cookie Clicker 2 */
-.section-title {
-  font-size: 18px;
-  margin: 0 0 10px;
-}
-
-.game-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 10px;
-}
-
-.game-card {
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  background: radial-gradient(circle at top, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
-  overflow: hidden;
-  cursor: pointer;
-  text-decoration: none;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
-}
-
-body.light .game-card {
-  background: #ffffff;
-}
-
-.game-card-thumb {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  display: block;
-  background: rgba(15, 23, 42, 0.7);
-}
-
-.game-card-body {
-  padding: 8px 9px 9px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.game-card-title {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.game-card-meta {
-  font-size: 11px;
-  opacity: 0.85;
-}
-
-.game-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(250, 204, 21, 0.9);
-  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.95);
-  background: radial-gradient(circle at top left, rgba(250, 204, 21, 0.18), rgba(15, 23, 42, 0.96));
-}
-
-/* Mô tả game */
-.game-description {
-  margin-top: 8px;
-}
-
-.game-description h2 {
-  font-size: 18px;
-  margin-top: 18px;
-  margin-bottom: 8px;
-}
-
-.game-description p,
-.game-description ul {
-  font-size: 14px;
-  line-height: 1.6;
-  margin: 0 0 8px;
-}
-
-/* Footer */
-.site-footer {
-  margin-top: auto;
-  border-top: 1px solid rgba(148, 163, 184, 0.4);
-  padding: 20px 16px 24px;
-  font-size: 13px;
-}
-
-.site-footer-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.footer-links a {
-  opacity: 0.9;
-}
-
-.footer-links a:hover {
-  text-decoration: underline;
-}
-
-/* Toast */
-.site-toast {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  background: rgba(15, 23, 42, 0.98);
-  color: #e5e7eb;
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-size: 13px;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9);
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
-  pointer-events: none;
-  z-index: 60;
-}
-
-body.light .site-toast {
-  background: rgba(17, 24, 39, 0.98);
-}
-
-.site-toast.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 /* ===============================
-   Responsive
+   Grid game bên dưới màn hình chơi
 ================================= */
-
-@media (max-width: 960px) {
-  .site-header-inner {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .site-nav {
-    order: 2;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .header-right {
-    margin-left: 0;
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .search-wrapper {
-    flex: 1;
-  }
-
-  .page-container {
-    padding-top: 90px;
-  }
-
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .site-header-inner {
-    padding-inline: 12px;
-  }
-
-  .site-logo span:last-child {
-    display: none; /* Ẩn chữ logo trên màn hình rất nhỏ để đỡ chật */
-  }
-
-  .site-nav {
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding-bottom: 4px;
-  }
-
-  .page-container {
-    padding-inline: 12px;
-  }
-}
-/* ===============================
-   Category page: pagination
-================================= */
-
-.pagination {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 14px;
-  justify-content: center;
-}
-
-.pagination button,
-.pagination a {
-  min-width: 32px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  background: rgba(15, 23, 42, 0.9);
-  color: #e5e7eb;
-  font-size: 13px;
-  cursor: pointer;
-  text-align: center;
-  text-decoration: none;
-  transition: background 0.2s ease-out, transform 0.2s ease-out, box-shadow 0.2s ease-out;
-}
-
-body.light .pagination button,
-body.light .pagination a {
-  background: #f9fafb;
-  color: #111827;
-  border-color: rgba(156, 163, 175, 0.8);
-}
-
-.pagination .active {
-  background: radial-gradient(circle at 0 0, #facc15, #eab308, #f97316);
-  color: #111827;
-  border-color: rgba(234, 179, 8, 0.9);
-}
-
-.pagination button:hover,
-.pagination a:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.8);
-}
-/* ===== Grid game bên dưới màn hình chơi ===== */
 
 /* Mặc định mobile: 2 cột */
 .game-grid {
@@ -795,21 +653,32 @@ body.light .pagination a {
   background: rgba(15, 23, 42, 0.9);
   border-radius: 14px;
   padding: 8px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+body.light .game-card {
+  background: #ffffff;
 }
 
 .game-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  border-color: rgba(250, 204, 21, 0.9);
 }
 
 /* Ảnh vuông */
 .game-card-thumb {
   width: 100%;
-  aspect-ratio: 1 / 1;  /* vuông 1:1 */
+  aspect-ratio: 1 / 1;
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 6px;
+  background: rgba(15, 23, 42, 0.7);
 }
 
 .game-card-thumb img {
@@ -825,488 +694,201 @@ body.light .pagination a {
   text-align: center;
 }
 
-/* Không dùng meta/tag cho block này */
+/* Nếu dùng body riêng cho card, cho full width */
 .game-card-body {
   width: 100%;
 }
-/* Ẩn breadcrumb trên trang chủ (bỏ chữ Home) */
-body[data-page-type="home"] #breadcrumb {
-  display: none;
-}
 
-/* Layout: cho main rộng hơn, sidebar Game hot hẹp hơn */
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px; /* main : sidebar */
-  gap: 20px;
-}
-/* Game hot: không scroll, để auto theo nội dung */
-.sidebar .card:first-child {
-  max-height: none;
-  overflow: visible;
-}
+/* ===============================
+   Category page: pagination
+================================= */
 
-/* Thu nhỏ chữ trong danh sách hot một chút */
-.hot-list img {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.hot-info .hot-title {
-  font-size: 0.85rem;
-}
-
-/* Khung chơi game responsive 16:9 */
-.game-frame-wrapper {
-  border-radius: 18px;
-  overflow: hidden;
-}
-
-.game-frame-inner {
-  position: relative;
-  padding-top: 56.25%; /* 16:9 cho desktop & mobile */
-  height: auto;
-}
-
-.game-frame {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-/* Mobile: nếu muốn thấp hơn chút */
-@media (max-width: 768px) {
-  .game-frame-inner {
-    padding-top: 65%; /* hơi cao hơn để dễ bấm nút */
-  }
-}
-
-/* Grid game dưới màn hình – 5 card / hàng (desktop), ảnh vuông */
-.game-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-@media (min-width: 768px) {
-  .game-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .game-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
-.game-card {
+.pagination {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-decoration: none;
-  color: inherit;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+  justify-content: center;
+}
+
+.pagination button,
+.pagination a {
+  min-width: 32px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
   background: rgba(15, 23, 42, 0.9);
-  border-radius: 14px;
-  padding: 8px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.game-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-}
-
-/* Ảnh vuông */
-.game-card-thumb {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-
-.game-card-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Tên game ở dưới, không tag */
-.game-card-title {
-  font-size: 0.9rem;
-  margin: 0;
+  color: #e5e7eb;
+  font-size: 13px;
+  cursor: pointer;
   text-align: center;
-}
-/* ===== Khung game 16:9, max-width 960–1280, căn giữa ===== */
-
-.game-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  text-decoration: none;
+  transition:
+    background 0.2s ease-out,
+    transform 0.2s ease-out,
+    box-shadow 0.2s ease-out;
 }
 
-/* khung ngoài để căn giữa & giới hạn chiều rộng */
-.game-frame-outer {
-  max-width: 1200px;          /* nằm trong khoảng 960–1280px */
-  width: 100%;
-  margin: 0 auto;             /* căn giữa theo chiều ngang */
+body.light .pagination button,
+body.light .pagination a {
+  background: #f9fafb;
+  color: #111827;
+  border-color: rgba(156, 163, 175, 0.8);
 }
 
-/* wrapper giữ tỷ lệ 16:9 bằng padding-top */
-.game-frame-wrapper {
-  position: relative;
-  width: 100%;
-  padding-top: 56.25%;        /* 16:9 = 9/16 = 0.5625 */
-  border-radius: 18px;
-  overflow: hidden;
-  background: #020617;        /* fallback nếu iframe đen */
+.pagination .active {
+  background: radial-gradient(circle at 0 0, #facc15, #eab308, #f97316);
+  color: #111827;
+  border-color: rgba(234, 179, 8, 0.9);
 }
 
-/* iframe/canvas chiếm full wrapper */
-.game-frame {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
+.pagination button:hover,
+.pagination a:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.8);
 }
 
-/* mobile: có thể cho cao hơn một chút */
-@media (max-width: 768px) {
-  .game-frame-outer {
-    max-width: 100%;
-  }
-  .game-frame-wrapper {
-    padding-top: 62%;         /* hơi cao hơn để dễ bấm nút trên mobile */
-  }
-}
+/* ===============================
+   Mô tả game
+================================= */
 
-/* ===== Title & meta bên dưới khung game ===== */
-
-.game-header {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.game-title {
-  margin: 0;
-}
-
-.game-meta {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-/* ===== 3 nút dồn sang bên phải ===== */
-
-.game-actions {
-  margin-top: 6px;
-}
-
-.game-actions-right {
-  display: flex;
-  justify-content: flex-end;  /* dồn sang phải */
-  gap: 8px;
-  flex-wrap: wrap;
-}
-/* ===== Layout: main rộng, sidebar nhỏ ===== */
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
-  gap: 24px;
-  align-items: flex-start;
-}
-
-/* Mobile: sidebar xuống dưới, full width */
-@media (max-width: 1024px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Bớt khoảng trống phía trên nội dung */
-.page-container {
-  padding-top: 16px;
-}
-
-/* ===== GAME SECTION (card chứa màn chơi + H1 + nút) ===== */
-.game-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* ===== Khung game FULL-WIDTH trong cột chính, max 1280px, căn giữa ===== */
-.game-frame-outer {
-  width: 100%;
-  max-width: 1280px;   /* trong khoảng 960–1280px như yêu cầu */
-  min-width: 0;
-  margin: 0 auto;      /* căn giữa theo chiều ngang */
-}
-
-/* Wrapper giữ tỷ lệ 16:9 bằng padding-top */
-.game-frame-wrapper {
-  position: relative;
-  width: 100%;
-  padding-top: 56.25%; /* 16:9 = 9/16 */
-  border-radius: 18px;
-  overflow: hidden;
-  background: #020617; /* màu nền nếu game chưa load */
-}
-
-/* iframe/canvas fill toàn bộ wrapper */
-.game-frame {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-/* Mobile: cho cao hơn chút để dễ chơi, vẫn chuẩn responsive */
-@media (max-width: 768px) {
-  .game-frame-outer {
-    max-width: 100%;
-  }
-  .game-frame-wrapper {
-    padding-top: 62%; /* hơi cao hơn, vẫn giữ tỉ lệ gần 16:9 */
-  }
-}
-
-/* ===== H1 & meta nằm dưới khung game ===== */
-.game-header {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.game-title {
-  margin: 0;
-}
-
-.game-meta {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-/* ===== 3 nút dồn sang bên phải ===== */
-.game-actions {
-  margin-top: 4px;
-}
-
-.game-actions.game-actions-right {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-/* ===== Sidebar Game hot gọn, không còn thanh scroll trắng dài ===== */
-.sidebar .card:first-child {
-  max-height: none;
-  overflow: visible;
-}
-
-.hot-list a {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 0;
-}
-
-.hot-list img {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-/* ================================
-   OVERRIDE LAYOUT: GAME TO, SIDEBAR NHỎ
-   DÁN Ở CUỐI style.css
-================================ */
-
-/* Container chính: canh giữa toàn trang, không quá rộng */
-.page-container {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 16px 24px 40px;
-  box-sizing: border-box;
-}
-
-/* Cột game ~75%, sidebar ~25% */
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); /* game 3 phần, sidebar 1 phần */
-  gap: 24px;
-  align-items: flex-start;
-}
-
-/* Mobile & tablet: sidebar xuống dưới */
-@media (max-width: 1024px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Khung game: dùng full chiều ngang cột, không bó max-width nữa */
-.game-frame-outer {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  margin: 0;
-}
-
-/* Vẫn giữ 16:9 responsive cho iframe */
-.game-frame-wrapper {
-  position: relative;
-  width: 100%;
-  padding-top: 56.25%; /* 16:9 */
-  border-radius: 18px;
-  overflow: hidden;
-  background: #020617;
-}
-
-.game-frame {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-/* Mobile: có thể cao hơn chút nhưng vẫn responsive */
-@media (max-width: 768px) {
-  .game-frame-wrapper {
-    padding-top: 62%;
-  }
-}
-
-/* Sidebar nhỏ gọn hơn, sát mép phải */
-.sidebar {
-  max-width: 320px;
-  margin-left: auto;
-}
-
-/* Card Game hot không bị cao quá + không scroll trắng khó chịu */
-.sidebar .card:first-child {
-  max-height: none;
-  overflow: visible;
-}
-
-/* Icon & text trong Game hot nhỏ lại chút cho cân */
-.hot-list img {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.hot-info .hot-title {
-  font-size: 0.85rem;
-}
-/* Hàng tiêu đề + meta + nút */
-.game-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap; /* mobile nhỏ thì tự xuống dòng gọn gàng */
+.game-description {
   margin-top: 8px;
 }
 
-.game-header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.game-description h2 {
+  font-size: 18px;
+  margin-top: 18px;
+  margin-bottom: 8px;
 }
 
-.game-title {
-  margin: 0;
-  font-size: 1.8rem;
-  line-height: 1.2;
+.game-description p,
+.game-description ul {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 8px;
 }
 
-.game-meta {
+/* ===============================
+   Footer
+================================= */
+
+.site-footer {
+  margin-top: auto;
+  border-top: 1px solid rgba(148, 163, 184, 0.4);
+  padding: 20px 16px 24px;
+  font-size: 13px;
+}
+
+.site-footer-inner {
+  max-width: 1440px;
+  margin: 0 auto;
   display: flex;
-  gap: 12px;
   flex-wrap: wrap;
-  font-size: 0.9rem;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.footer-links a {
   opacity: 0.9;
 }
 
-/* Link category */
-.game-meta-link {
-  color: #facc15;
-  text-decoration: none;
-}
-.game-meta-link:hover {
+.footer-links a:hover {
   text-decoration: underline;
 }
 
-/* Nút bên phải */
-.game-actions-right {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-/* Hàng tiêu đề + meta + nút: luôn 1 hàng */
-.game-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: nowrap;          /* KHÔNG cho nhóm nút rơi xuống hàng 2 */
+/* ===============================
+   Toast
+================================= */
+
+.site-toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  background: rgba(15, 23, 42, 0.98);
+  color: #e5e7eb;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+  pointer-events: none;
+  z-index: 60;
 }
 
-/* Cụm bên trái: H1 + meta trên cùng 1 hàng, cho phép tự xuống dòng khi thiếu chỗ */
-.game-header-left {
-  display: flex;
-  flex-wrap: wrap;            /* text dài quá thì meta tự xuống dưới H1, nhưng vẫn là 1 cụm */
-  align-items: center;
-  gap: 12px;
+body.light .site-toast {
+  background: rgba(17, 24, 39, 0.98);
+  color: #e5e7eb;
 }
 
-/* H1 gọn hơn chút cho đủ chỗ */
-.game-title {
-  margin: 0;
-  font-size: 1.6rem;
-  line-height: 1.2;
+.site-toast.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-/* Meta nằm ngay sát H1 */
-.game-meta {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  font-size: 0.9rem;
-  opacity: 0.9;
+/* ===============================
+   Responsive chung
+================================= */
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* Nhóm nút bên phải, không có margin-top để khỏi tụt xuống */
-.game-actions {
-  margin-top: 0;
+@media (max-width: 960px) {
+  .site-header-inner {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .site-nav {
+    order: 2;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .header-right {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .search-wrapper {
+    flex: 1;
+  }
 }
 
-.game-actions-right {
-  display: flex;
-  gap: 10px;
-  flex-wrap: nowrap;          /* 3 nút giữ trên 1 hàng */
-}
-@media (max-width: 768px) {
+@media (max-width: 640px) {
+  .site-header-inner {
+    padding-inline: 12px;
+  }
+
+  .site-logo span:last-child {
+    display: none; /* Ẩn chữ logo trên màn nhỏ */
+  }
+
+  .site-nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .page-container {
+    padding-inline: 12px;
+  }
+
   .game-header-row {
-    flex-wrap: wrap;          /* mobile cho phép 2 hàng */
+    flex-wrap: wrap;
     gap: 8px 12px;
   }
 
@@ -1315,67 +897,3 @@ body[data-page-type="home"] #breadcrumb {
     justify-content: flex-start;
   }
 }
-/* ===== FIX: H1 căn trái, không bị thụt vào ===== */
-
-.game-header-left {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.game-title {
-  margin: 0;
-  padding: 0;
-  font-size: 1.8rem;
-  line-height: 1.2;
-  text-align: left !important;
-}
-
-.game-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: nowrap;
-  gap: 20px;
-}
-
-/* BẮT BUỘC: xoá mọi text-align center trong khối game */
-.game-section h1,
-.game-section,
-.game-header-left,
-.game-header-row {
-  text-align: left !important;
-}
-/* ===== FIX SIDEBAR SÁT VÀO KHUNG GAME ===== */
-
-/* Giảm khoảng cách giữa 2 cột */
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
-  gap: 12px !important;     /* từ 24px → 12px để sát hơn */
-}
-
-/* Sidebar không tự đẩy sang phải nữa */
-.sidebar {
-  margin-left: 0 !important;
-  padding-left: 0 !important;
-}
-
-/* Card của sidebar sát mép hơn */
-.sidebar .card {
-  margin-left: 0 !important;
-}
-
-/* Nếu còn bị đẩy xa bởi padding trong column container */
-.column {
-  padding: 0 !important;
-}
-
-/* Giảm padding thừa trong ô bao */
-.page-container {
-  padding-left: 12px !important;
-  padding-right: 12px !important;
-}
-
