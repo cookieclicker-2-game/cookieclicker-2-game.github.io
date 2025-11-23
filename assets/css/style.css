@@ -550,7 +550,7 @@ body.light .btn-ghost {
 }
 
 /* ===============================
-   Sidebar: Game Hot
+   Sidebar: Game Hot + Recently played
 ================================= */
 
 /* Card đầu tiên (Game Hot) không bị giới hạn height */
@@ -559,7 +559,7 @@ body.light .btn-ghost {
   overflow: visible;
 }
 
-/* Tiêu đề "Game Hot" – text trong HTML nên là "Game Hot" */
+/* Tiêu đề "Game Hot" / "Tiếp tục chơi" */
 .sidebar-title {
   font-size: 20px;
   font-weight: 700;
@@ -573,14 +573,14 @@ body.light .btn-ghost {
   padding: 16px 14px;
 }
 
-/* Danh sách game hot */
+/* Danh sách game hot / recently played */
 .hot-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* Một item game hot */
+/* Layout mặc định: icon nhỏ + text (dùng cho "Tiếp tục chơi") */
 .hot-item {
   display: flex;
   align-items: center;
@@ -598,7 +598,7 @@ body.light .btn-ghost {
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.6);
 }
 
-/* Ảnh game hot */
+/* Ảnh game (layout danh sách) */
 .hot-thumb,
 .hot-item img {
   width: 48px;
@@ -922,58 +922,58 @@ body.light .site-toast {
     justify-content: flex-start;
   }
 }
-/* ===== SIDEBAR GAME HOT – CARD ẢNH LỚN + BADGE HOT ===== */
 
-/* Sidebar thu gọn vừa nội dung */
-.sidebar {
-  width: 260px;
-  max-width: 260px;
-}
+/* ===== SIDEBAR GAME HOT – CARD ẢNH LỚN + BADGE HOT (CHỈ #hotGames) ===== */
 
-/* Card chứa danh sách hot */
-.sidebar .card {
-  padding: 16px 12px;
-}
-
-/* Danh sách hot */
-.hot-list {
+/* Chỉ áp dụng cho Game hot, KHÔNG ảnh hưởng "Tiếp tục chơi" */
+#hotGames.hot-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* Một card HOT */
-.hot-item.hot-card {
+/* Mỗi game hot = 1 card ảnh lớn */
+#hotGames .hot-item {
+  position: relative;
   display: block;
+  padding: 0;
   border-radius: 18px;
   overflow: hidden;
-  background: #000000;
+  background: #000;
   text-decoration: none;
-  position: relative;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
 }
 
-.hot-item.hot-card:hover {
+#hotGames .hot-item:hover {
   transform: translateY(-3px);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
 }
 
 /* Bọc ảnh */
-.hot-card-thumb-wrap {
-  position: relative;
-}
-
-/* Ảnh game */
-.hot-card-thumb {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
+#hotGames .hot-thumb-wrapper {
   display: block;
 }
 
-/* Badge HOT đỏ góc trên trái */
-.hot-badge {
+/* Ảnh game: full width 16:9 */
+#hotGames .hot-thumb,
+#hotGames .hot-item img {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+/* Ẩn text info ở Game hot (chỉ còn card ảnh) */
+#hotGames .hot-info {
+  display: none !important;
+}
+
+/* Badge HOT đỏ góc trên trái (dùng pseudo-element, không cần sửa HTML/JS) */
+#hotGames .hot-item::before {
+  content: "HOT";
   position: absolute;
   top: 8px;
   left: 8px;
@@ -985,12 +985,5 @@ body.light .site-toast {
   border-radius: 999px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-}
-
-/* Mobile: sidebar full width */
-@media (max-width: 1024px) {
-  .sidebar {
-    width: 100%;
-    max-width: 100%;
-  }
+  z-index: 2;
 }
