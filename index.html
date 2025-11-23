@@ -15,7 +15,7 @@
   <!-- TODO: GSC verify meta here -->
   <meta name="google-site-verification" content="gwZJI-NhnCxE4bHlp8M6Vso-5kjf-jGVusAkQ6-KGoE">
 
-  <!-- Meta description (SEO US, English) -->
+  <!-- Meta description -->
   <meta name="description" content="Play Cookie Clicker 2 online for free. Upgrade your bakery, unlock new power-ups, and see how many cookies you can bake in this addictive clicker game.">
 
   <!-- Meta robots -->
@@ -40,29 +40,164 @@
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body data-slug="home" data-primary-category="">
-  <header>
-    <!-- TODO: Header chung (logo, nav, search, theme toggle) sẽ code ở bước sau -->
-    <h1 style="text-align:center; margin: 40px 0;">Cookie Clicker 2 Game Hub</h1>
+  <!-- Header chung -->
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a href="/" class="site-logo">
+        <div class="site-logo-icon">🍪</div>
+        <span>CookieGames</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/clicker.games" class="nav-link">
+          <span class="dot"></span><span>Game Clicker</span>
+        </a>
+        <a href="/idle.games" class="nav-link">
+          <span class="dot"></span><span>Game Idle</span>
+        </a>
+        <a href="/io.games" class="nav-link">
+          <span class="dot"></span><span>Game IO</span>
+        </a>
+        <a href="/hot.games" class="nav-link">
+          <span class="dot"></span><span>Game Hot</span>
+        </a>
+      </nav>
+
+      <div class="header-right">
+        <div class="search-wrapper" id="searchWrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            type="search"
+            id="searchInput"
+            class="search-input"
+            placeholder="Tìm game..."
+            autocomplete="off"
+          >
+          <div id="searchResults" class="search-results" aria-label="Search results"></div>
+        </div>
+
+        <button id="themeToggle" class="theme-toggle" type="button">
+          <span class="icon">🌙</span>
+          <span>Theme</span>
+        </button>
+      </div>
+    </div>
   </header>
 
-  <main style="max-width: 960px; margin: 0 auto; padding: 16px;">
-    <p style="text-align:center;">
-      Home page is working. We will add the full Cookie Clicker 2 layout in the next step.
-    </p>
-    <p style="text-align:center;">
-      <a href="/cookie-clicker-2.html">Go to Cookie Clicker 2 game page</a>
-    </p>
+  <main class="page-container">
+    <div class="layout">
+      <!-- Cột trái: featured Cookie Clicker 2 -->
+      <section class="main-content">
+        <nav id="breadcrumb" class="breadcrumb" aria-label="Breadcrumb">
+          <span>Home</span>
+        </nav>
+
+        <article class="card">
+          <header class="game-header">
+            <h1 class="game-title">Cookie Clicker 2</h1>
+            <div class="game-meta">
+              <span>🍪 <strong>12,340</strong> plays</span>
+              <span>⭐ 4.8 / 5.0</span>
+              <span>Category: Clicker · Idle</span>
+            </div>
+          </header>
+
+          <div class="game-frame-wrapper" style="margin-top: 12px;">
+            <div class="game-frame-inner">
+              <!-- Ghi chú dev (VN): tạm dùng iframe embed chính Cookie Clicker 2 -->
+              <iframe
+                src="/embed/cookie-clicker-2/index.html"
+                class="game-frame"
+                title="Cookie Clicker 2"
+                allowfullscreen
+              ></iframe>
+            </div>
+          </div>
+
+          <div class="game-actions">
+            <button type="button" class="btn btn-primary" id="btnComment">
+              <span class="icon">💬</span>
+              <span>Bình luận</span>
+            </button>
+            <button type="button" class="btn btn-ghost" id="btnShare">
+              <span class="icon">🔗</span>
+              <span>Chia sẻ</span>
+            </button>
+            <button type="button" class="btn btn-ghost" id="btnFullscreen">
+              <span class="icon">⛶</span>
+              <span>Phóng to</span>
+            </button>
+          </div>
+        </article>
+
+        <!-- Block clicker games giống Cookie Clicker 2 -->
+        <section class="card" style="margin-top: 14px;">
+          <h2 class="section-title">Clicker games giống Cookie Clicker 2</h2>
+          <div id="clickerGrid" class="game-grid">
+            <!-- TODO: sẽ render bằng JS từ GAMES (getClickerGames) -->
+          </div>
+        </section>
+
+        <!-- Mô tả game: content tiếng Anh -->
+        <section class="card game-description" style="margin-top: 14px;">
+          <h2>Introduction to Cookie Clicker 2</h2>
+          <p>
+            Cookie Clicker 2 is a free online clicker game where every tap on the giant cookie
+            helps you grow a crazy, ever-expanding bakery empire. Buy auto-clickers, hire grandmas,
+            unlock factories, and watch your cookies-per-second skyrocket.
+          </p>
+
+          <h2>How to Play Cookie Clicker 2</h2>
+          <p>
+            Click the big cookie to earn your first batch of cookies, then invest them into buildings
+            and upgrades that generate cookies automatically. The deeper you go, the more powerful
+            and absurd your production chain becomes.
+          </p>
+
+          <h2>Tips and Strategies</h2>
+          <ul>
+            <li>Focus early on cheap upgrades that boost your manual clicks.</li>
+            <li>Balance between buying new buildings and upgrading existing ones.</li>
+            <li>Check in often to spend your offline cookie production efficiently.</li>
+          </ul>
+
+          <h2>Similar Clicker Games</h2>
+          <p>
+            If you enjoy Cookie Clicker 2, you might also like other idle clicker games such as
+            <strong>Astro Robot Clicker</strong>, <strong>Idle Gold Miner</strong>, or
+            <strong>Brainrot Craft</strong>. We will feature them in the Clicker and Idle categories.
+          </p>
+        </section>
+      </section>
+
+      <!-- Cột phải: Hot games -->
+      <aside class="sidebar">
+        <section class="card">
+          <h2 class="sidebar-title">Game hot</h2>
+          <div id="hotGames" class="hot-list">
+            <!-- TODO: sẽ render bằng JS getHotGames(8) -->
+          </div>
+        </section>
+      </aside>
+    </div>
   </main>
 
-  <footer style="text-align:center; padding: 24px 0; font-size: 14px;">
-    <p>© <span id="year"></span> Cookie Clicker 2</p>
+  <!-- Footer chung -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <div>
+        © <span data-year></span> Cookie Clicker 2 Game Hub
+      </div>
+      <nav class="footer-links">
+        <a href="/about.html">About Us</a>
+        <a href="/contact.html">Contact Us</a>
+        <a href="/privacy-policy.html">Privacy Policy</a>
+        <a href="/terms-of-use.html">Terms of Use</a>
+        <a href="/dmca.html">DMCA</a>
+      </nav>
+    </div>
   </footer>
 
-  <script>
-    // Cập nhật năm footer
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
   <script src="/assets/js/site.js" defer></script>
 </body>
 </html>
-
