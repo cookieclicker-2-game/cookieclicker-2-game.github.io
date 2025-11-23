@@ -184,7 +184,6 @@
     thumbWrap.appendChild(badge);
 
     a.appendChild(thumbWrap);
-
     return a;
   }
 
@@ -192,16 +191,11 @@
     const container = document.getElementById("hotGames");
     if (!container || typeof getGameBySlug !== "function") return;
 
-    // Lấy game theo slug, bỏ những slug không tìm thấy
-    const games = HOT_GAME_SLUGS.map((slug) => getGameBySlug(slug)).filter(
-      Boolean
-    );
+    const games = HOT_GAME_SLUGS.map(slug => getGameBySlug(slug)).filter(Boolean);
 
     container.innerHTML = "";
     const frag = document.createDocumentFragment();
-    games.forEach((g) => {
-      frag.appendChild(createHotItem(g));
-    });
+    games.forEach(g => frag.appendChild(createHotItem(g)));
     container.appendChild(frag);
   }
 
