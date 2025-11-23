@@ -1348,4 +1348,34 @@ body[data-page-type="home"] #breadcrumb {
 .game-header-row {
   text-align: left !important;
 }
+/* ===== FIX SIDEBAR SÁT VÀO KHUNG GAME ===== */
+
+/* Giảm khoảng cách giữa 2 cột */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+  gap: 12px !important;     /* từ 24px → 12px để sát hơn */
+}
+
+/* Sidebar không tự đẩy sang phải nữa */
+.sidebar {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* Card của sidebar sát mép hơn */
+.sidebar .card {
+  margin-left: 0 !important;
+}
+
+/* Nếu còn bị đẩy xa bởi padding trong column container */
+.column {
+  padding: 0 !important;
+}
+
+/* Giảm padding thừa trong ô bao */
+.page-container {
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+}
 
