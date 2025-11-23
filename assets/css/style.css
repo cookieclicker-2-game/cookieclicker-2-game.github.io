@@ -1018,4 +1018,118 @@ body[data-page-type="home"] #breadcrumb {
   gap: 8px;
   flex-wrap: wrap;
 }
+/* ===== Layout: main rộng, sidebar nhỏ ===== */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* Mobile: sidebar xuống dưới, full width */
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Bớt khoảng trống phía trên nội dung */
+.page-container {
+  padding-top: 16px;
+}
+
+/* ===== GAME SECTION (card chứa màn chơi + H1 + nút) ===== */
+.game-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ===== Khung game FULL-WIDTH trong cột chính, max 1280px, căn giữa ===== */
+.game-frame-outer {
+  width: 100%;
+  max-width: 1280px;   /* trong khoảng 960–1280px như yêu cầu */
+  min-width: 0;
+  margin: 0 auto;      /* căn giữa theo chiều ngang */
+}
+
+/* Wrapper giữ tỷ lệ 16:9 bằng padding-top */
+.game-frame-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 = 9/16 */
+  border-radius: 18px;
+  overflow: hidden;
+  background: #020617; /* màu nền nếu game chưa load */
+}
+
+/* iframe/canvas fill toàn bộ wrapper */
+.game-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Mobile: cho cao hơn chút để dễ chơi, vẫn chuẩn responsive */
+@media (max-width: 768px) {
+  .game-frame-outer {
+    max-width: 100%;
+  }
+  .game-frame-wrapper {
+    padding-top: 62%; /* hơi cao hơn, vẫn giữ tỉ lệ gần 16:9 */
+  }
+}
+
+/* ===== H1 & meta nằm dưới khung game ===== */
+.game-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.game-title {
+  margin: 0;
+}
+
+.game-meta {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ===== 3 nút dồn sang bên phải ===== */
+.game-actions {
+  margin-top: 4px;
+}
+
+.game-actions.game-actions-right {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ===== Sidebar Game hot gọn, không còn thanh scroll trắng dài ===== */
+.sidebar .card:first-child {
+  max-height: none;
+  overflow: visible;
+}
+
+.hot-list a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.hot-list img {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+}
 
