@@ -1118,3 +1118,51 @@ body.light .site-toast {
 .search-result-meta {
   display: none !important;
 }
+/* =========================================
+   BEAUTIFUL SCROLLBAR FOR SEARCH DROPDOWN
+   ========================================= */
+.search-results {
+  --scrollbar-bg: rgba(255, 255, 255, 0.05);
+  --scrollbar-thumb: rgba(148, 163, 184, 0.65);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.8);
+}
+
+/* Light mode colors */
+body.light .search-results {
+  --scrollbar-bg: rgba(0, 0, 0, 0.05);
+  --scrollbar-thumb: rgba(100, 116, 139, 0.6);
+  --scrollbar-thumb-hover: rgba(30, 41, 59, 0.9);
+}
+
+/* WebKit browsers (Chrome + Safari + iOS) */
+.search-results::-webkit-scrollbar {
+  width: 7px;
+}
+
+.search-results::-webkit-scrollbar-track {
+  background: var(--scrollbar-bg);
+  border-radius: 999px;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+
+.search-results::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox */
+.search-results {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+}
+
+/* Make scrolling smoother */
+.search-results {
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
