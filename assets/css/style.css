@@ -1327,11 +1327,8 @@ body.light .search-results {
    và cắt luôn phần "Comments powered by Cusdis" ở dưới */
 #cusdis_thread iframe {
   width: 100% !important;
-  height: 320px !important;   /* đủ để hiển thị form + vài dòng cmt */
-  min-height: 0 !important;
-  max-height: 320px !important;
+  min-height: 420px;   /* chiều cao vừa phải, không tạo scrollbar riêng */
   border: 0;
-  overflow: hidden;           /* ẩn scrollbar bên trong iframe */
 }
 
 /* Nền khớp theme (bên ngoài iframe) */
