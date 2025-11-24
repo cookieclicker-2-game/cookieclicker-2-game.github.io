@@ -1110,3 +1110,11 @@ body.light .site-toast {
     height: 100% !important;
   }
 }
+/* Hide category meta in search dropdown */
+.search-result-meta {
+  display: none !important;
+}
+/* Hide category meta in search dropdown */
+.search-result-meta {
+  display: none !important;
+}
