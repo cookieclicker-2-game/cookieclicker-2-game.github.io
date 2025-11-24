@@ -559,6 +559,51 @@
 
   document.addEventListener("DOMContentLoaded", initBreadcrumb);
 })();
+// =========================
+// Cusdis comments: sync page info + theme
+// =========================
+(function () {
+  function initCusdis() {
+    const el = document.getElementById("cusdis_thread");
+    if (!el) return;
+
+    // Nếu HTML chưa set, tự gán thông tin trang hiện tại
+    if (!el.dataset.pageId) {
+      el.dataset.pageId = window.location.pathname || "/";
+    }
+    if (!el.dataset.pageUrl) {
+      el.dataset.pageUrl = window.location.href;
+    }
+    if (!el.dataset.pageTitle) {
+      el.dataset.pageTitle = document.title || "Cookie Clicker 2";
+    }
+
+    // Theme ban đầu theo body
+    const theme = document.body.classList.contains("light") ? "light" : "dark";
+    el.dataset.theme = theme;
+
+    // Sau khi widget load xong, cố gắng apply theme 1 lần nữa
+    function tryApplyTheme() {
+      if (window.CUSDIS && typeof window.CUSDIS.setTheme === "function") {
+        window.CUSDIS.setTheme(theme);
+      }
+    }
+    setTimeout(tryApplyTheme, 1500);
+  }
+
+  // Hàm này sẽ được gọi mỗi lần bạn đổi theme ở nút "Theme"
+  window.__setCusdisTheme = function (theme) {
+    const el = document.getElementById("cusdis_thread");
+    if (el) {
+      el.dataset.theme = theme;
+    }
+    if (window.CUSDIS && typeof window.CUSDIS.setTheme === "function") {
+      window.CUSDIS.setTheme(theme);
+    }
+  };
+
+  document.addEventListener("DOMContentLoaded", initCusdis);
+})();
 
 // =========================
 // Share / Fullscreen / Comment buttons
