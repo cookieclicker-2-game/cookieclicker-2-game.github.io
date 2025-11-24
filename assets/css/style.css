@@ -1165,4 +1165,25 @@ body.light .search-results {
   overscroll-behavior: contain;
   scroll-behavior: smooth;
 }
+/* ===============================
+   MOBILE: Header should not cover game
+================================= */
+@media (max-width: 768px) {
+  /* Turn off sticky on mobile */
+  .site-header {
+    position: static;
+    top: auto;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: #020617; /* dark top bar */
+  }
 
+  body.light .site-header {
+    background: #f9fafb; /* light top bar */
+  }
+
+  /* Make sure main content starts right under header */
+  .page-container {
+    padding-top: 12px;
+  }
+}
