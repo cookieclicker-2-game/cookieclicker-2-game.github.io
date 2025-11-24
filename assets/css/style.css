@@ -1361,3 +1361,57 @@ body.light #cusdis_thread {
 body.light .hero-figure img {
   box-shadow: 0 12px 30px rgba(148, 163, 184, 0.55);
 }
+/* =========================================
+   Improved Headings (H2 / H3) Styling
+   Matches dark/light theme and site color palette
+========================================= */
+
+/* H2 — Section title for content */
+.game-description h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 26px;
+  margin-bottom: 10px;
+  color: #facc15; /* Cookie gold */
+  text-shadow: 0 0 10px rgba(250, 204, 21, 0.25);
+  letter-spacing: 0.3px;
+}
+
+/* Light mode H2 */
+body.light .game-description h2 {
+  color: #d97706; /* deeper warm gold for light */
+  text-shadow: 0 0 6px rgba(217, 119, 6, 0.15);
+}
+
+/* H3 — Sub headings inside content */
+.game-description h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 22px;
+  margin-bottom: 8px;
+  color: #e5e7eb; /* soft white for dark mode */
+}
+
+/* Light mode H3 */
+body.light .game-description h3 {
+  color: #1f2937; /* Gray-800 for clean readability */
+}
+
+/* Subtle underline for both themes to improve structure */
+.game-description h2::after,
+.game-description h3::after {
+  content: "";
+  display: block;
+  width: 42px;
+  height: 2px;
+  border-radius: 999px;
+  margin-top: 4px;
+  background: linear-gradient(to right, #facc15, transparent);
+  opacity: 0.8;
+}
+
+/* Light mode underline */
+body.light .game-description h3::after,
+body.light .game-description h2::after {
+  background: linear-gradient(to right, #f59e0b, transparent);
+}
