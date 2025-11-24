@@ -817,3 +817,13 @@
     }
   });
 })();
+document.getElementById("btnComment")?.addEventListener("click", function () {
+  const commentBox = document.getElementById("comments");
+  if (commentBox) {
+    commentBox.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
+});
+
