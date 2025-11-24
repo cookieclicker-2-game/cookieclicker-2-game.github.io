@@ -223,6 +223,23 @@
           </p>
 
         </section>
+<div id="cusdis_thread"></div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const thread = document.getElementById("cusdis_thread");
+    if (!thread) return;
+
+    thread.setAttribute("data-host", "https://cusdis.com");
+    thread.setAttribute("data-app-id", "cb49394b-0e6f-40c8-9817-e09a02385975");
+
+    thread.setAttribute("data-page-id", window.location.pathname);
+    thread.setAttribute("data-page-url", window.location.href);
+    thread.setAttribute("data-page-title", document.title);
+  });
+</script>
+
+<script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
 
       </section>
 
