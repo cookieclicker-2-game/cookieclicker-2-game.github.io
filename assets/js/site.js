@@ -805,3 +805,15 @@
 
   document.addEventListener("DOMContentLoaded", initHotGamesRotator);
 })();
+// =========================
+// Footer year
+// =========================
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    var yearSpan = document.querySelector("[data-year]");
+    if (yearSpan) {
+      yearSpan.textContent = new Date().getFullYear();
+    }
+  });
+})();
+
