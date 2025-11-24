@@ -15,7 +15,7 @@ const GAMES = [
     thumbnail: "/assets/thumbs/cookie-clicker-2.png",
     embedUrl: "/embed/cookie-clicker-2/index.html",
     categories: ["clicker", "idle"],
-    isHot: true,
+    isHot: false,
     createdAt: "2025-11-01"
   },
   {
