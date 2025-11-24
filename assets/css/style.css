@@ -1187,3 +1187,120 @@ body.light .search-results {
     padding-top: 12px;
   }
 }
+/* =========================================
+   Responsive layout – optimized breakpoints
+   Desktop ≥ 1024px | Tablet 768–1023px | Mobile < 768px
+========================================= */
+
+/* Tablet & mobile: sidebar below game, header wraps nicely */
+@media (max-width: 1023px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .site-header-inner {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .site-nav {
+    order: 2;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .header-right {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .search-wrapper {
+    flex: 1;
+  }
+}
+
+/* Mobile < 768px: game big, header not covering it */
+@media (max-width: 767px) {
+  /* Header no longer sticky on mobile */
+  .site-header {
+    position: static;
+    top: auto;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: #020617;
+  }
+
+  body.light .site-header {
+    background: #f9fafb;
+  }
+
+  .site-header-inner {
+    padding-inline: 12px;
+  }
+
+  /* Hide text logo on very small screens */
+  .site-logo span:last-child {
+    display: none;
+  }
+
+  /* Nav scroll horizontally */
+  .site-nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .page-container {
+    padding-inline: 12px;
+    padding-top: 12px;
+  }
+
+  .game-header-row {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+
+  .game-actions-right {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  /* Game frame: full width + tall like native site */
+  .game-frame-outer,
+  .game-frame-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .game-frame-wrapper {
+    padding-top: 0;
+    height: 85vh;      /* almost full screen height */
+    border-radius: 0;  /* full-bleed on mobile */
+  }
+
+  .game-frame {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* Game grid columns: tablet & desktop tweaks */
+@media (min-width: 768px) and (max-width: 1199px) {
+  /* Tablet / small desktop: 3 columns below the game */
+  .game-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  /* Large desktop: 5 columns (2 rows of 5 = 10 games) */
+  .game-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
