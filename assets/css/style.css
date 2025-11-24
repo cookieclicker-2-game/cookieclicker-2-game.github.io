@@ -1318,59 +1318,27 @@ body.light .search-results {
   font-size: 18px;
 }
 
-/* Khung comment chiếm full chiều rộng card */
+/* Wrapper chiếm full chiều rộng card */
 #cusdis_thread {
   width: 100%;
 }
 
-/* Làm iframe cao hơn để hạn chế phải cuộn bên trong */
+/* Thu nhỏ chiều cao, không để thừa khoảng trống
+   và cắt luôn phần "Comments powered by Cusdis" ở dưới */
 #cusdis_thread iframe {
   width: 100% !important;
-  min-height: 460px;   /* có thể tăng 520–600 nếu muốn cao hơn */
-  max-height: 720px;
+  height: 320px !important;   /* đủ để hiển thị form + vài dòng cmt */
+  min-height: 0 !important;
+  max-height: 320px !important;
   border: 0;
+  overflow: hidden;           /* ẩn scrollbar bên trong iframe */
 }
 
-/* Màu nền khớp theme (khung ngoài iframe) */
-body.dark #cusdis_thread iframe {
+/* Nền khớp theme (bên ngoài iframe) */
+body.dark #cusdis_thread {
   background-color: #020617;
 }
 
-body.light #cusdis_thread iframe {
-  background-color: #ffffff;
-}
-/* ===============================
-   Comments (Cusdis)
-================================= */
-
-.comments-card {
-  margin-top: 14px;
-}
-
-.comments-card .section-title {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 18px;
-}
-
-/* Khung comment chiếm full chiều rộng card */
-#cusdis_thread {
-  width: 100%;
-}
-
-/* Làm iframe cao hơn để hạn chế phải cuộn bên trong */
-#cusdis_thread iframe {
-  width: 100% !important;
-  min-height: 460px;   /* có thể tăng 520–600 nếu muốn cao hơn */
-  max-height: 720px;
-  border: 0;
-}
-
-/* Màu nền khớp theme (khung ngoài iframe) */
-body.dark #cusdis_thread iframe {
-  background-color: #020617;
-}
-
-body.light #cusdis_thread iframe {
+body.light #cusdis_thread {
   background-color: #ffffff;
 }
