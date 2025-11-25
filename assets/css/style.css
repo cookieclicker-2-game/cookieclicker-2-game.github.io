@@ -1906,3 +1906,16 @@ body.light .comment-error {
     padding-inline: 14px;
   }
 }
+/* ===== Fix layout khu Comments ===== */
+
+/* Khung ngoài của khu comment */
+#comments {
+  max-width: 980px;          /* cho bằng phần nội dung trên (tuỳ site, có thể chỉnh 900–1000) */
+  margin: 32px auto 0;       /* canh giữa giống main content */
+}
+
+/* Nếu bạn dùng .comments-section thay vì #comments thì thêm: */
+.comments-section {
+  max-width: 980px;
+  margin: 32px auto 0;
+}
