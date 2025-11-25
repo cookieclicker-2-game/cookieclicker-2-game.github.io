@@ -819,7 +819,7 @@
 })();
 
 // =======================
-// COMMENTS – Supabase moderation (inline error)
+// COMMENTS – Supabase backend (pending / approved)
 // =======================
 (function () {
   const commentsSection = document.querySelector(".comments-section");
@@ -838,22 +838,26 @@
   const commentTermsEl = document.getElementById("comment-terms");
   const errorEl = document.getElementById("comment-error");
 
-  // Supabase config
+  // --- Supabase config (public anon key) ---
   const SUPABASE_URL = "https://qrepgtwngjdzmbnopsdr.supabase.co";
   const SUPABASE_ANON_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZXBndHduZ2pkem1ibm9wc2RyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzM0ODMsImV4cCI6MjA3OTY0OTQ4M30.TvX9J2aBQWAyAK225q2czsZN5fXz8Edj57XF7h3kIwA";
 
   function setError(msg) {
-    if (errorEl) errorEl.textContent = msg || "";
+    if (!errorEl) return;
+    errorEl.textContent = msg || "";
   }
 
-  function createCommentCard(row) {
+  // In–memory state for sorting
+  let commentsState = [];
+
+  function createCommentCard(c) {
     const card = document.createElement("article");
     card.className = "comment-card";
 
     const avatar = document.createElement("div");
     avatar.className = "comment-avatar";
-    avatar.textContent = row.name ? row.name.trim()[0].toUpperCase() : "?";
+    avatar.textContent = c.name ? c.name.trim()[0].toUpperCase() : "?";
 
     const content = document.createElement("div");
     content.className = "comment-content";
@@ -861,15 +865,13 @@
     const meta = document.createElement("div");
     meta.className = "comment-meta";
     meta.innerHTML = `
-      <span class="comment-name">${row.name || "Guest"}</span>
-      <span class="comment-time">${new Date(
-        row.created_at
-      ).toLocaleString()}</span>
+      <span class="comment-name">${c.name || "Guest"}</span>
+      <span class="comment-time">${c.createdAt}</span>
     `;
 
     const text = document.createElement("p");
     text.className = "comment-text";
-    text.textContent = row.text;
+    text.textContent = c.text;
 
     content.appendChild(meta);
     content.appendChild(text);
@@ -879,38 +881,41 @@
     return card;
   }
 
-  function renderList(list) {
-    if (!commentsListEl || !commentCountEl) return;
-
+  function renderComments() {
     commentsListEl.innerHTML = "";
-    if (!list || list.length === 0) {
+
+    if (!commentsState.length) {
       commentsListEl.innerHTML =
         '<div style="opacity:0.75;font-size:14px;">No comments yet.</div>';
       commentCountEl.textContent = "(0)";
       return;
     }
 
-    list.forEach((row) => {
-      commentsListEl.appendChild(createCommentCard(row));
+    commentsState.forEach((c) => {
+      commentsListEl.appendChild(createCommentCard(c));
     });
-    commentCountEl.textContent = `(${list.length})`;
+    commentCountEl.textContent = `(${commentsState.length})`;
   }
 
-  async function loadApprovedComments(orderMode = "newest") {
-    if (!commentsListEl) return;
+  function sortComments(mode) {
+    commentsState.sort((a, b) =>
+      mode === "oldest" ? a.createdAtMs - b.createdAtMs : b.createdAtMs - a.createdAtMs
+    );
+  }
+
+  async function loadApprovedComments() {
+    if (!commentsListEl || !commentCountEl) return;
 
     commentsListEl.innerHTML =
       '<div style="opacity:0.8;font-size:14px;">Loading comments...</div>';
 
     try {
-      const orderParam = orderMode === "oldest" ? "asc" : "desc";
-
-const url =
-  `${SUPABASE_URL}/rest/v1/comments` +
-  `?game_id=eq.${encodeURIComponent(gameId)}` +
-  `&status=eq.approved` +               // CHỈ lấy comment đã duyệt
-  `&select=game_id,name,text,created_at` +
-  `&order=created_at.${orderParam}`;
+      const url =
+        SUPABASE_URL +
+        `/rest/v1/comments?select=*` +
+        `&game_id=eq.${encodeURIComponent(gameId)}` +
+        `&status=eq.approved` +
+        `&order=created_at.desc`;
 
       const res = await fetch(url, {
         headers: {
@@ -919,21 +924,40 @@ const url =
         }
       });
 
-      if (!res.ok) throw new Error("Failed to fetch comments");
+      if (!res.ok) {
+        throw new Error("Failed to fetch comments");
+      }
+
       const data = await res.json();
-      renderList(data);
+
+      commentsState = (data || []).map((row) => {
+        const ms = row.created_at ? new Date(row.created_at).getTime() : Date.now();
+        return {
+          id: row.id,
+          name: row.name || "Guest",
+          text: row.text || "",
+          createdAt: row.created_at
+            ? new Date(row.created_at).toLocaleString()
+            : "",
+          createdAtMs: ms
+        };
+      });
+
+      sortComments("newest");
+      renderComments();
     } catch (err) {
       console.error(err);
       commentsListEl.innerHTML =
         '<div style="color:#fecaca;font-size:14px;">Failed to load comments.</div>';
-      if (commentCountEl) commentCountEl.textContent = "(0)";
+      commentCountEl.textContent = "(0)";
     }
   }
 
-  function initSort() {
+  function initSortSelect() {
     if (!sortSelectEl) return;
     sortSelectEl.addEventListener("change", function () {
-      loadApprovedComments(sortSelectEl.value);
+      sortComments(sortSelectEl.value || "newest");
+      renderComments();
     });
   }
 
@@ -960,16 +984,16 @@ const url =
         return;
       }
 
-      try {
-        const url = `${SUPABASE_URL}/rest/v1/comments`;
-        const payload = {
-          game_id: gameId,
-          name,
-          email,
-          text
-          // status default 'pending'
-        };
+      const payload = {
+        game_id: gameId,
+        name,
+        email,
+        text,
+        status: "pending"
+      };
 
+      try {
+        const url = SUPABASE_URL + "/rest/v1/comments";
         const res = await fetch(url, {
           method: "POST",
           headers: {
@@ -981,20 +1005,20 @@ const url =
           body: JSON.stringify(payload)
         });
 
-        if (!res.ok) throw new Error("Failed to submit comment");
+        if (!res.ok) {
+          throw new Error("Failed to insert comment");
+        }
 
         commentTextEl.value = "";
-        setError("");
-        showToast("Thanks! Your comment will appear after it is approved.");
+        showToast("Thanks! Your comment is waiting for approval.");
       } catch (err) {
         console.error(err);
-        setError("Something went wrong. Please try again later.");
+        setError("Failed to submit comment. Please try again later.");
       }
     });
   }
 
-  // init
-  loadApprovedComments("newest");
-  initSort();
+  loadApprovedComments();
+  initSortSelect();
   initSubmit();
 })();
