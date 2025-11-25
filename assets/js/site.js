@@ -819,7 +819,7 @@
 })();
 
 // =======================
-// COMMENTS – GitHub Issues moderation
+// COMMENTS – GitHub Issues moderation (inline error)
 // =======================
 (function () {
   const commentsSection = document.querySelector(".comments-section");
@@ -836,8 +836,14 @@
   const commentNameEl = document.getElementById("comment-name");
   const commentEmailEl = document.getElementById("comment-email");
   const commentTermsEl = document.getElementById("comment-terms");
+  const errorEl = document.getElementById("comment-error");
 
-  // ---------- Helpers ----------
+  function setError(msg) {
+    if (!errorEl) return;
+    errorEl.textContent = msg || "";
+  }
+
+  // ---------- helpers for rendering ----------
   function createCommentCard(data) {
     const card = document.createElement("article");
     card.className = "comment-card";
@@ -862,7 +868,6 @@
 
     content.appendChild(meta);
     content.appendChild(text);
-
     card.appendChild(avatar);
     card.appendChild(content);
 
@@ -908,7 +913,6 @@
         return issue.body.includes("Game ID: " + gameId);
       });
 
-      // sort newest first by default
       filtered.sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
@@ -941,11 +945,12 @@
           '<div style="opacity:0.75;font-size:14px;">No comments yet.</div>';
       }
 
-      // handle sort dropdown (newest/oldest)
       if (sortSelectEl) {
         sortSelectEl.addEventListener("change", function () {
           const mode = sortSelectEl.value;
-          const arr = Array.from(commentsListEl.querySelectorAll(".comment-card"));
+          const arr = Array.from(
+            commentsListEl.querySelectorAll(".comment-card")
+          );
           if (arr.length <= 1) return;
 
           arr.sort((a, b) => {
@@ -974,19 +979,20 @@
 
     commentFormEl.addEventListener("submit", function (e) {
       e.preventDefault();
+      setError("");
 
       const text = (commentTextEl.value || "").trim();
       const name = (commentNameEl.value || "").trim() || "Anonymous";
       const email = (commentEmailEl.value || "").trim();
 
       if (!text) {
-        alert("Please enter your comment.");
+        setError("Please enter your comment.");
         commentTextEl.focus();
         return;
       }
 
       if (!commentTermsEl.checked) {
-        alert("Please agree to the terms and conditions before submitting.");
+        setError("Please agree to the terms and conditions before submitting.");
         commentTermsEl.focus();
         return;
       }
@@ -1006,11 +1012,11 @@
       window.open(issueUrl, "_blank");
 
       commentTextEl.value = "";
+      setError("");
       showToast("Thanks! Your comment will appear after it is reviewed.");
     });
   }
 
-  // init
   loadApprovedComments();
   initSubmit();
 })();
