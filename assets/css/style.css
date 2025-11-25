@@ -1674,39 +1674,71 @@ body.light .comment-error {
    DESCRIPTION COLLAPSE (Show more)
 ================================= */
 
+/* Khối mô tả bị giới hạn chiều cao mặc định 500px */
 .game-description {
   position: relative;
   overflow: hidden;
-  max-height: 500px;   /* <<< kiểm soát chiều cao phần hiển thị */
+  max-height: 500px;              /* ✅ Chiều cao mặc định */
   transition: max-height 0.35s ease;
 }
 
-.game-description.expanded {
-  max-height: 9999px;  /* mở full */
+/* Khi mở rộng → không giới hạn chiều cao (coi như auto height) */
+.game-description.is-expanded {
+  max-height: 9999px;
 }
 
+/* Nút Show more / Show less */
 .desc-toggle-btn {
-  margin-top: 12px;
+  margin-top: 16px;
   padding: 8px 16px;
-  border-radius: 10px;
+  border-radius: 999px;
   border: 1px solid #3b82f6;
-  background: rgba(15, 23, 42, 0.85);
-  color: white;
+  background: rgba(15, 23, 42, 0.88);
+  color: #e5e7eb;
   cursor: pointer;
   font-size: 14px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: 0.25s ease;
+  transition:
+    background 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
 }
 
+/* Light theme */
 body.light .desc-toggle-btn {
-  background: white;
-  color: black;
+  background: #ffffff;
+  color: #111827;
   border-color: #2563eb;
 }
 
 .desc-toggle-btn:hover {
-  background: rgba(37, 99, 235, 0.2);
+  background: rgba(37, 99, 235, 0.16);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.55);
   transform: translateY(-1px);
 }
+
+/* Label và icon mũi tên */
+.desc-toggle-label {
+  line-height: 1;
+}
+
+.desc-toggle-icon {
+  display: inline-block;
+  font-size: 14px;
+  transition: transform 0.25s ease;
+}
+
+/* Khi khối .game-description mở rộng → xoay mũi tên 180° */
+.game-description.is-expanded .desc-toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* Đặt nút luôn ở dưới cùng khối mô tả */
+.game-description .desc-toggle-btn {
+  position: relative;
+  z-index: 1;
+}
+
