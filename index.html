@@ -372,6 +372,62 @@
 
     </div>
   </main>
+<!-- COMMENTS – Among Us -->
+<section class="comments-section" id="comments" data-game-id="among-us">
+  <div class="comments-header-row">
+    <h3 class="comments-title">Comments <span id="comment-count">(0)</span></h3>
+
+    <div class="comments-sort">
+      <label for="comment-sort">Sort:</label>
+      <select id="comment-sort">
+        <option value="newest">Newest</option>
+        <option value="oldest">Oldest</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="comments-divider"></div>
+
+  <div class="comments-list" id="comments-list">
+    <!-- Comment cards sẽ được JS render -->
+  </div>
+
+  <form class="comment-form" id="comment-form">
+    <div class="comment-input-row">
+      <input
+        type="text"
+        id="comment-text"
+        class="comment-input-main"
+        placeholder="Add comment"
+        required
+      />
+      <button type="submit" class="comment-send-btn" aria-label="Send comment">
+        &gt;
+      </button>
+    </div>
+
+    <input
+      type="text"
+      id="comment-name"
+      class="comment-input-sub"
+      placeholder="Name"
+      autocomplete="name"
+    />
+
+    <input
+      type="email"
+      id="comment-email"
+      class="comment-input-sub"
+      placeholder="Email"
+      autocomplete="email"
+    />
+
+    <label class="comment-terms">
+      <input type="checkbox" id="comment-terms" required />
+      <span>I’d read and agree to the terms and conditions.</span>
+    </label>
+  </form>
+</section>
 
   <!-- FOOTER -->
   <footer class="site-footer">
