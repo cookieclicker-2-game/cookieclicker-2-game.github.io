@@ -819,7 +819,7 @@
 })();
 
 // =======================
-// COMMENTS – GitHub Issues moderation (inline error)
+// COMMENTS – Supabase moderation (inline error)
 // =======================
 (function () {
   const commentsSection = document.querySelector(".comments-section");
@@ -838,19 +838,22 @@
   const commentTermsEl = document.getElementById("comment-terms");
   const errorEl = document.getElementById("comment-error");
 
+  // Supabase config
+  const SUPABASE_URL = "https://qrepgtwngjdzmbnopsdr.supabase.co";
+  const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZXBndHduZ2pkem1ibm9wc2RyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzM0ODMsImV4cCI6MjA3OTY0OTQ4M30.TvX9J2aBQWAyAK225q2czsZN5fXz8Edj57XF7h3kIwA";
+
   function setError(msg) {
-    if (!errorEl) return;
-    errorEl.textContent = msg || "";
+    if (errorEl) errorEl.textContent = msg || "";
   }
 
-  // ---------- helpers for rendering ----------
-  function createCommentCard(data) {
+  function createCommentCard(row) {
     const card = document.createElement("article");
     card.className = "comment-card";
 
     const avatar = document.createElement("div");
     avatar.className = "comment-avatar";
-    avatar.textContent = data.name ? data.name.trim()[0].toUpperCase() : "?";
+    avatar.textContent = row.name ? row.name.trim()[0].toUpperCase() : "?";
 
     const content = document.createElement("div");
     content.className = "comment-content";
@@ -858,13 +861,15 @@
     const meta = document.createElement("div");
     meta.className = "comment-meta";
     meta.innerHTML = `
-      <span class="comment-name">${data.name || "Guest"}</span>
-      <span class="comment-time">${data.createdAt || ""}</span>
+      <span class="comment-name">${row.name || "Guest"}</span>
+      <span class="comment-time">${new Date(
+        row.created_at
+      ).toLocaleString()}</span>
     `;
 
     const text = document.createElement("p");
     text.className = "comment-text";
-    text.textContent = data.text;
+    text.textContent = row.text;
 
     content.appendChild(meta);
     content.appendChild(text);
@@ -874,110 +879,67 @@
     return card;
   }
 
-  function extractCommentText(body) {
-    if (!body) return "";
-    const marker = "Comment:\n";
-    let txt = body;
-    const idx = body.indexOf(marker);
-    if (idx !== -1) {
-      txt = body.substring(idx + marker.length);
-    }
-    txt = txt.split("\n---")[0];
-    return txt.trim();
-  }
-
-  function extractName(body, fallbackTitle) {
-    if (!body) return fallbackTitle || "Guest";
-    const m = body.match(/Name:\s*(.+)/i);
-    if (m && m[1]) return m[1].trim();
-    if (fallbackTitle) return fallbackTitle.replace(/^Comment from\s*/i, "").trim();
-    return "Guest";
-  }
-
-  // ---------- Load approved comments from GitHub ----------
-  async function loadApprovedComments() {
+  function renderList(list) {
     if (!commentsListEl || !commentCountEl) return;
+
+    commentsListEl.innerHTML = "";
+    if (!list || list.length === 0) {
+      commentsListEl.innerHTML =
+        '<div style="opacity:0.75;font-size:14px;">No comments yet.</div>';
+      commentCountEl.textContent = "(0)";
+      return;
+    }
+
+    list.forEach((row) => {
+      commentsListEl.appendChild(createCommentCard(row));
+    });
+    commentCountEl.textContent = `(${list.length})`;
+  }
+
+  async function loadApprovedComments(orderMode = "newest") {
+    if (!commentsListEl) return;
 
     commentsListEl.innerHTML =
       '<div style="opacity:0.8;font-size:14px;">Loading comments...</div>';
 
     try {
-      const apiUrl =
-        "https://api.github.com/repos/cookieclicker-2-game/cookieclicker-2-game.github.io/issues?state=all&labels=approved&per_page=100";
+      const orderParam = orderMode === "oldest" ? "asc" : "desc";
 
-      const res = await fetch(apiUrl);
-      const issues = await res.json();
+      const url =
+        `${SUPABASE_URL}/rest/v1/comments` +
+        `?game_id=eq.${encodeURIComponent(gameId)}` +
+        `&select=game_id,name,text,created_at` +
+        `&order=created_at.${orderParam}`;
 
-      const filtered = issues.filter((issue) => {
-        if (!issue.body) return false;
-        return issue.body.includes("Game ID: " + gameId);
+      const res = await fetch(url, {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: "Bearer " + SUPABASE_ANON_KEY
+        }
       });
 
-      filtered.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-
-      commentsListEl.innerHTML = "";
-      let count = 0;
-
-      filtered.forEach((issue) => {
-        const body = issue.body || "";
-        const name = extractName(body, issue.title || "");
-        const text = extractCommentText(body);
-        if (!text) return;
-
-        const createdAt = new Date(issue.created_at).toLocaleString();
-
-        const card = createCommentCard({
-          name,
-          text,
-          createdAt
-        });
-
-        commentsListEl.appendChild(card);
-        count++;
-      });
-
-      commentCountEl.textContent = `(${count})`;
-
-      if (count === 0) {
-        commentsListEl.innerHTML =
-          '<div style="opacity:0.75;font-size:14px;">No comments yet.</div>';
-      }
-
-      if (sortSelectEl) {
-        sortSelectEl.addEventListener("change", function () {
-          const mode = sortSelectEl.value;
-          const arr = Array.from(
-            commentsListEl.querySelectorAll(".comment-card")
-          );
-          if (arr.length <= 1) return;
-
-          arr.sort((a, b) => {
-            const ta = a.querySelector(".comment-time")?.textContent || "";
-            const tb = b.querySelector(".comment-time")?.textContent || "";
-            const da = new Date(ta).getTime();
-            const db = new Date(tb).getTime();
-            return mode === "oldest" ? da - db : db - da;
-          });
-
-          commentsListEl.innerHTML = "";
-          arr.forEach((el) => commentsListEl.appendChild(el));
-        });
-      }
+      if (!res.ok) throw new Error("Failed to fetch comments");
+      const data = await res.json();
+      renderList(data);
     } catch (err) {
       console.error(err);
       commentsListEl.innerHTML =
         '<div style="color:#fecaca;font-size:14px;">Failed to load comments.</div>';
-      commentCountEl.textContent = "(0)";
+      if (commentCountEl) commentCountEl.textContent = "(0)";
     }
   }
 
-  // ---------- Submit comment → open GitHub Issue ----------
+  function initSort() {
+    if (!sortSelectEl) return;
+    sortSelectEl.addEventListener("change", function () {
+      loadApprovedComments(sortSelectEl.value);
+    });
+  }
+
   function initSubmit() {
     if (!commentFormEl) return;
 
-    commentFormEl.addEventListener("submit", function (e) {
+    commentFormEl.addEventListener("submit", async function (e) {
       e.preventDefault();
       setError("");
 
@@ -997,26 +959,41 @@
         return;
       }
 
-      let body = "";
-      body += `Game ID: ${gameId}\n`;
-      body += `Name: ${name}\n`;
-      if (email) body += `Email: ${email}\n`;
-      body += `\nComment:\n${text}\n\n---\nPage: ${location.href}`;
+      try {
+        const url = `${SUPABASE_URL}/rest/v1/comments`;
+        const payload = {
+          game_id: gameId,
+          name,
+          email,
+          text
+          // status default 'pending'
+        };
 
-      const title = `Comment from ${name}`;
-      const issueUrl =
-        "https://github.com/cookieclicker-2-game/cookieclicker-2-game.github.io/issues/new" +
-        `?title=${encodeURIComponent(title)}` +
-        `&body=${encodeURIComponent(body)}`;
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: "Bearer " + SUPABASE_ANON_KEY,
+            "Content-Type": "application/json",
+            Prefer: "return=minimal"
+          },
+          body: JSON.stringify(payload)
+        });
 
-      window.open(issueUrl, "_blank");
+        if (!res.ok) throw new Error("Failed to submit comment");
 
-      commentTextEl.value = "";
-      setError("");
-      showToast("Thanks! Your comment will appear after it is reviewed.");
+        commentTextEl.value = "";
+        setError("");
+        showToast("Thanks! Your comment will appear after it is approved.");
+      } catch (err) {
+        console.error(err);
+        setError("Something went wrong. Please try again later.");
+      }
     });
   }
 
-  loadApprovedComments();
+  // init
+  loadApprovedComments("newest");
+  initSort();
   initSubmit();
 })();
