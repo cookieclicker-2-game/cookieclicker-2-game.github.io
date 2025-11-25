@@ -905,11 +905,12 @@
     try {
       const orderParam = orderMode === "oldest" ? "asc" : "desc";
 
-      const url =
-        `${SUPABASE_URL}/rest/v1/comments` +
-        `?game_id=eq.${encodeURIComponent(gameId)}` +
-        `&select=game_id,name,text,created_at` +
-        `&order=created_at.${orderParam}`;
+const url =
+  `${SUPABASE_URL}/rest/v1/comments` +
+  `?game_id=eq.${encodeURIComponent(gameId)}` +
+  `&status=eq.approved` +               // CHỈ lấy comment đã duyệt
+  `&select=game_id,name,text,created_at` +
+  `&order=created_at.${orderParam}`;
 
       const res = await fetch(url, {
         headers: {
