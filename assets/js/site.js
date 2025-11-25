@@ -1,1074 +1,448 @@
-// /assets/js/site.js
-
-// =========================
-// Helper: Toast notification
-// =========================
-(function () {
-  let toastEl = null;
-  let toastTimeout = null;
-
-  function ensureToastElement() {
-    if (toastEl) return toastEl;
-    toastEl = document.createElement("div");
-    toastEl.id = "siteToast";
-    toastEl.className = "site-toast";
-    document.body.appendChild(toastEl);
-    return toastEl;
-  }
-
-  window.showToast = function (message) {
-    const el = ensureToastElement();
-    el.textContent = message;
-
-    el.classList.add("show");
-    if (toastTimeout) clearTimeout(toastTimeout);
-
-    toastTimeout = setTimeout(() => {
-      el.classList.remove("show");
-    }, 2500);
-  };
-})();
-
-// =========================
-// Theme (Dark / Light)
-// =========================
-(function () {
-  const body = document.body;
-  const toggleBtn = document.getElementById("themeToggle");
-  const THEME_KEY = "theme";
-
-  function applyTheme(theme) {
-    if (theme === "light") {
-      body.classList.remove("dark");
-      body.classList.add("light");
-    } else {
-      body.classList.remove("light");
-      body.classList.add("dark");
-      theme = "dark";
-    }
-    localStorage.setItem(THEME_KEY, theme);
-  }
-
-  function initTheme() {
-    let stored = localStorage.getItem(THEME_KEY);
-    if (!stored) stored = "dark";
-    applyTheme(stored);
-  }
-
-  function initToggle() {
-    if (!toggleBtn) return;
-    toggleBtn.addEventListener("click", function () {
-      const current = localStorage.getItem(THEME_KEY) || "dark";
-      const next = current === "dark" ? "light" : "dark";
-      applyTheme(next);
-    });
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    initTheme();
-    initToggle();
-  });
-})();
-
-// =========================
-// Search autocomplete
-// =========================
-(function () {
-  const MAX_RESULTS = 10;
-
-  function normalize(str) {
-    return (str || "").toLowerCase();
-  }
-
-  function renderSearchResults(resultsContainer, games, query) {
-    resultsContainer.innerHTML = "";
-
-    const q = (query || "").trim();
-    if (!q) {
-      resultsContainer.classList.remove("show");
-      return;
-    }
-
-    if (!games || games.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "search-result-empty";
-      empty.textContent = "No result for: " + q;
-      resultsContainer.appendChild(empty);
-      resultsContainer.classList.add("show");
-      return;
-    }
-
-    const frag = document.createDocumentFragment();
-
-    games.forEach((g) => {
-      const a = document.createElement("a");
-      a.href = `/${g.slug}.html`;
-      a.className = "search-result-item";
-
-      const thumb = document.createElement("img");
-      thumb.className = "search-result-thumb";
-      thumb.src = g.thumbnail;
-      thumb.alt = g.title;
-
-      const textWrap = document.createElement("div");
-      textWrap.className = "search-result-text";
-
-      const titleEl = document.createElement("div");
-      titleEl.className = "search-result-title";
-      titleEl.textContent = g.title;
-
-      const metaEl = document.createElement("div");
-      metaEl.className = "search-result-meta";
-      if (Array.isArray(g.categories) && g.categories.length > 0) {
-        metaEl.textContent = g.categories.join(", ");
-      } else {
-        metaEl.textContent = "";
-      }
-
-      textWrap.appendChild(titleEl);
-      textWrap.appendChild(metaEl);
-
-      a.appendChild(thumb);
-      a.appendChild(textWrap);
-
-      frag.appendChild(a);
-    });
-
-    resultsContainer.appendChild(frag);
-    resultsContainer.classList.add("show");
-  }
-
-  function initSearch() {
-    const input = document.getElementById("searchInput");
-    const results = document.getElementById("searchResults");
-    const wrapper = document.getElementById("searchWrapper");
-
-    if (!input || !results || !wrapper || typeof GAMES === "undefined") return;
-
-    input.addEventListener("input", function () {
-      const q = input.value || "";
-      const trimmed = q.trim();
-
-      if (!trimmed) {
-        results.innerHTML = "";
-        results.classList.remove("show");
-        return;
-      }
-
-      const matched = GAMES.filter((g) =>
-        normalize(g.title).includes(normalize(trimmed))
-      ).slice(0, MAX_RESULTS);
-
-      renderSearchResults(results, matched, trimmed);
-    });
-
-    // Click outside → close dropdown
-    document.addEventListener("click", function (e) {
-      if (!wrapper.contains(e.target)) {
-        results.classList.remove("show");
-      }
-    });
-  }
-
-  document.addEventListener("DOMContentLoaded", initSearch);
-})();
-
-// =========================
-// Hot games sidebar
-// =========================
-(function () {
-  function createHotItem(game) {
-    const a = document.createElement("a");
-    a.href = `/${game.slug}.html`;
-    a.className = "hot-item";
-
-    const thumbWrap = document.createElement("div");
-    thumbWrap.className = "hot-thumb-wrapper";
-
-    const img = document.createElement("img");
-    img.src = game.thumbnail;
-    img.loading = "lazy";
-    img.alt = `${game.title} thumbnail`;
-    img.className = "hot-thumb";
-
-    thumbWrap.appendChild(img);
-
-    const info = document.createElement("div");
-    info.className = "hot-info";
-
-    const titleEl = document.createElement("div");
-    titleEl.className = "hot-title";
-    titleEl.textContent = game.title;
-
-    const meta = document.createElement("div");
-    meta.className = "hot-meta";
-    meta.textContent = Array.isArray(game.categories)
-      ? game.categories.join(", ")
-      : "";
-
-    info.appendChild(titleEl);
-    info.appendChild(meta);
-
-    a.appendChild(thumbWrap);
-    a.appendChild(info);
-
-    return a;
-  }
-
-  function renderHotGames() {
-    const container = document.getElementById("hotGames");
-    if (!container || typeof getHotGames !== "function") return;
-
-    // 10 hot games → rotator will show 6 at a time
-    const games = getHotGames(10);
-    container.innerHTML = "";
-    const frag = document.createDocumentFragment();
-    games.forEach((g) => {
-      frag.appendChild(createHotItem(g));
-    });
-    container.appendChild(frag);
-  }
-
-  document.addEventListener("DOMContentLoaded", renderHotGames);
-})();
-
-// =========================
-// Grid below main game
-// Home: 10 games (5 clicker, 3 idle, 2 io)
-// Game page: 12 latest clicker games
-// =========================
-(function () {
-  function createGridCard(game) {
-    const a = document.createElement("a");
-    a.href = `/${game.slug}.html`;
-    a.className = "game-card";
-
-    const thumb = document.createElement("div");
-    thumb.className = "game-card-thumb";
-
-    const img = document.createElement("img");
-    img.src = game.thumbnail;
-    img.loading = "lazy";
-    img.alt = `${game.title} thumbnail`;
-
-    thumb.appendChild(img);
-
-    const body = document.createElement("div");
-    body.className = "game-card-body";
-
-    const titleEl = document.createElement("h3");
-    titleEl.className = "game-card-title";
-    titleEl.textContent = game.title;
-
-    body.appendChild(titleEl);
-
-    a.appendChild(thumb);
-    a.appendChild(body);
-
-    return a;
-  }
-
-  function renderGrid(containerId, games) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    container.innerHTML = "";
-    const frag = document.createDocumentFragment();
-    games.forEach((g) => frag.appendChild(createGridCard(g)));
-    container.appendChild(frag);
-  }
-
-  function shuffle(arr) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }
-
-  function pickRandom(list, count, usedSlugs) {
-    const available = list.filter((g) => !usedSlugs.has(g.slug));
-    if (available.length === 0) return [];
-    const shuffled = shuffle(available);
-    const picked = shuffled.slice(0, Math.min(count, shuffled.length));
-    picked.forEach((g) => usedSlugs.add(g.slug));
-    return picked;
-  }
-
-  function initBlocks() {
-    if (typeof GAMES === "undefined") return;
-
-    const body = document.body;
-    const pageType = body.dataset.pageType || "";
-
-    if (pageType === "home") {
-      // Build 10 games: 5 clicker, 3 idle, 2 io
-      const clickers = GAMES.filter(
-        (g) => Array.isArray(g.categories) && g.categories.includes("clicker")
-      );
-      const idles = GAMES.filter(
-        (g) => Array.isArray(g.categories) && g.categories.includes("idle")
-      );
-      const ios = GAMES.filter(
-        (g) => Array.isArray(g.categories) && g.categories.includes("io")
-      );
-
-      const used = new Set();
-      const result = [];
-
-      result.push(...pickRandom(clickers, 5, used));
-      result.push(...pickRandom(idles, 3, used));
-      result.push(...pickRandom(ios, 2, used));
-
-      const finalList = shuffle(result).slice(0, 10);
-      renderGrid("clickerGrid", finalList);
-      return;
-    }
-
-    // Game detail page: 12 latest clicker games
-    if (pageType === "game" && typeof getClickerGames === "function") {
-      if (document.getElementById("clickerGrid")) {
-        const clickers = getClickerGames(12);
-        renderGrid("clickerGrid", clickers);
-      }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cookie Clicker 2 - Play Free Online Clicker Game</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/assets/thumbs/favicon.png" />
+
+  <!-- Canonical: home page -->
+  <link rel="canonical" href="https://cookieclicker-2-game.github.io/" />
+
+  <!-- TODO: GSC verify meta -->
+  <meta name="google-site-verification" content="gwZJI-NhnCxE4bHlp8M6Vso-5kjf-jGVusAkQ6-KGoE" />
+
+  <!-- Meta description: home -->
+  <meta
+    name="description"
+    content="Step into Cookie Clicker 2, a free idle game where your growing bakery starts with a single tap. Produce endless cookies and watch your sweet empire rise!"
+  />
+  <meta name="robots" content="index,follow" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Cookie Clicker 2 - Play Free Online Clicker Game" />
+  <meta
+    property="og:description"
+    content="Enjoy Cookie Clicker 2 and other clicker, idle, IO, and hot arcade games in one simple, fast browser hub."
+  />
+  <meta property="og:url" content="https://cookieclicker-2-game.github.io/" />
+  <meta property="og:image" content="https://cookieclicker-2-game.github.io/assets/thumbs/cookie-clicker-2.png" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Cookie Clicker 2 - Play Free Online Clicker Game" />
+  <meta
+    name="twitter:description"
+    content="Click to bake cookies, unlock upgrades, and discover more idle & clicker games online."
+  />
+  <meta name="twitter:image" content="https://cookieclicker-2-game.github.io/assets/thumbs/cookie-clicker-2.png" />
+
+  <!-- GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TS4TB1552X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag("js", new Date());
+    gtag("config", "G-TS4TB1552X");
+  </script>
+
+  <!-- Schema.org: WebSite + SearchAction -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Cookie Clicker 2 Game Hub",
+    "url": "https://cookieclicker-2-game.github.io/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://cookieclicker-2-game.github.io/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
     }
   }
+  </script>
 
-  document.addEventListener("DOMContentLoaded", initBlocks);
-})();
-
-// =========================
-// Category pages (clicker / idle / io / hot)
-// =========================
-(function () {
-  function createGridCard(game) {
-    const a = document.createElement("a");
-    a.href = `/${game.slug}.html`;
-    a.className = "game-card";
-
-    const thumb = document.createElement("div");
-    thumb.className = "game-card-thumb";
-
-    const img = document.createElement("img");
-    img.src = game.thumbnail;
-    img.loading = "lazy";
-    img.alt = `${game.title} thumbnail`;
-
-    thumb.appendChild(img);
-
-    const body = document.createElement("div");
-    body.className = "game-card-body";
-
-    const titleEl = document.createElement("h3");
-    titleEl.className = "game-card-title";
-    titleEl.textContent = game.title;
-
-    const meta = document.createElement("div");
-    meta.className = "game-card-meta";
-    meta.textContent = Array.isArray(game.categories)
-      ? game.categories.join(", ")
-      : "";
-
-    body.appendChild(titleEl);
-    body.appendChild(meta);
-
-    a.appendChild(thumb);
-    a.appendChild(body);
-
-    return a;
+  <!-- Optional: WebPage schema for home -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Cookie Clicker 2 - Play Free Online Clicker Game",
+    "url": "https://cookieclicker-2-game.github.io/",
+    "description": "Home page of Cookie Clicker 2 Game Hub featuring the Cookie Clicker 2 browser game and curated clicker, idle, IO and hot games."
   }
-
-  function renderCategoryGrid(items) {
-    const container = document.getElementById("categoryGrid");
-    if (!container) return;
-    container.innerHTML = "";
-
-    if (!items || items.length === 0) {
-      const p = document.createElement("p");
-      p.textContent = "No games found in this category.";
-      container.appendChild(p);
-      return;
-    }
-
-    const frag = document.createDocumentFragment();
-    items.forEach((g) => frag.appendChild(createGridCard(g)));
-    container.appendChild(frag);
-  }
-
-  function renderPagination(cat, meta) {
-    const pagEl = document.getElementById("pagination");
-    if (!pagEl) return;
-    pagEl.innerHTML = "";
-
-    const totalPages = meta.totalPages || 1;
-    const currentPage = meta.currentPage || 1;
-    if (totalPages <= 1) return;
-
-    const ul = document.createElement("div");
-    ul.className = "pagination-inner";
-
-    function createPageLink(label, page, disabled, active) {
-      const a = document.createElement("a");
-      a.href = "/" + cat + `.games?page=` + page;
-      a.textContent = label;
-      a.className = "pagination-link";
-      if (disabled) a.classList.add("is-disabled");
-      if (active) a.classList.add("is-active");
-      return a;
-    }
-
-    if (currentPage > 1) {
-      ul.appendChild(createPageLink("Prev", currentPage - 1, false, false));
-    }
-
-    for (let p = 1; p <= totalPages; p++) {
-      ul.appendChild(createPageLink(String(p), p, false, p === currentPage));
-    }
-
-    if (currentPage < totalPages) {
-      ul.appendChild(createPageLink("Next", currentPage + 1, false, false));
-    }
-
-    pagEl.appendChild(ul);
-  }
-
-  function initCategory() {
-    const body = document.body;
-    const pageType = body.dataset.pageType;
-    if (pageType !== "category") return;
-
-    if (typeof getGamesByCategory !== "function") return;
-
-    const cat = body.dataset.category;
-    if (!cat) return;
-
-    const params = new URLSearchParams(window.location.search);
-    const page = parseInt(params.get("page") || "1", 10) || 1;
-    const perPage = 20;
-
-    const result = getGamesByCategory(cat, page, perPage);
-    if (!result) return;
-
-    renderCategoryGrid(result.items || []);
-    renderPagination(cat, result);
-  }
-
-  document.addEventListener("DOMContentLoaded", initCategory);
-})();
-
-// =========================
-// Breadcrumb
-// =========================
-(function () {
-  function initBreadcrumb() {
-    const el = document.getElementById("breadcrumb");
-    if (!el) return;
-
-    const body = document.body;
-    const pageType = body.dataset.pageType || "";
-    const slug = body.dataset.slug;
-    const primaryCategory = body.dataset.primaryCategory;
-
-    el.innerHTML = "";
-
-    function createCrumb(label, href, isCurrent) {
-      const span = document.createElement(isCurrent ? "span" : "a");
-      span.className = "breadcrumb-item";
-      if (!isCurrent && href) {
-        span.href = href;
-      }
-      span.textContent = label;
-      return span;
-    }
-
-    // Home
-    const homeLink = createCrumb("Home", "/", false);
-    el.appendChild(homeLink);
-
-    if (pageType === "home") {
-      return;
-    }
-
-    // Category pages
-    if (pageType === "category") {
-      const cat = body.dataset.category;
-      let label = "";
-      if (cat === "clicker") label = "Clicker Games";
-      else if (cat === "idle") label = "Idle Games";
-      else if (cat === "io") label = "IO Games";
-      else if (cat === "hot") label = "Hot Games";
-
-      if (label) {
-        const sep = document.createElement("span");
-        sep.className = "breadcrumb-separator";
-        sep.textContent = ">";
-        el.appendChild(sep);
-
-        const catSpan = createCrumb(label, null, true);
-        el.appendChild(catSpan);
-      }
-      return;
-    }
-
-    // Game detail page
-    if (slug) {
-      let cat = primaryCategory || "";
-      let catLabel = "";
-      let catHref = "";
-
-      if (cat === "clicker") {
-        catLabel = "Clicker Games";
-        catHref = "/clicker.games";
-      } else if (cat === "idle") {
-        catLabel = "Idle Games";
-        catHref = "/idle.games";
-      } else if (cat === "io") {
-        catLabel = "IO Games";
-        catHref = "/io.games";
-      } else if (cat === "hot") {
-        catLabel = "Hot Games";
-        catHref = "/hot.games";
-      }
-
-      if (catLabel && catHref) {
-        const sep1 = document.createElement("span");
-        sep1.className = "breadcrumb-separator";
-        sep1.textContent = ">";
-        el.appendChild(sep1);
-
-        const catLink = createCrumb(catLabel, catHref, false);
-        el.appendChild(catLink);
-      }
-
-      if (typeof getGameBySlug === "function") {
-        const game = getGameBySlug(slug);
-        if (game) {
-          const sep2 = document.createElement("span");
-          sep2.className = "breadcrumb-separator";
-          sep2.textContent = ">";
-          el.appendChild(sep2);
-
-          const current = createCrumb(game.title, null, true);
-          el.appendChild(current);
-        }
-      }
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", initBreadcrumb);
-})();
-
-// =========================
-// Share / Fullscreen / Comment buttons
-// =========================
-(function () {
-  function handleShare() {
-    const url = window.location.href;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard
-        .writeText(url)
-        .then(() => {
-          showToast("Game link copied!");
-        })
-        .catch(() => {
-          showToast("Failed to copy link. Please copy manually.");
-        });
-    } else {
-      window.prompt("Copy game link:", url);
-    }
-  }
-
-  function handleFullscreen() {
-    const doc = document;
-    const target =
-      document.querySelector(".game-frame-wrapper") ||
-      document.querySelector(".game-frame");
-
-    if (!target) {
-      showToast("Game frame not found.");
-      return;
-    }
-
-    const isFullscreen =
-      doc.fullscreenElement ||
-      doc.webkitFullscreenElement ||
-      doc.mozFullScreenElement ||
-      doc.msFullscreenElement;
-
-    if (!isFullscreen) {
-      if (target.requestFullscreen) {
-        target.requestFullscreen();
-      } else if (target.webkitRequestFullscreen) {
-        target.webkitRequestFullscreen();
-      } else if (target.mozRequestFullScreen) {
-        target.mozRequestFullScreen();
-      } else if (target.msRequestFullscreen) {
-        target.msRequestFullscreen();
-      } else {
-        showToast("Your browser does not support fullscreen.");
-      }
-    } else {
-      if (doc.exitFullscreen) {
-        doc.exitFullscreen();
-      } else if (doc.webkitExitFullscreen) {
-        doc.webkitExitFullscreen();
-      } else if (doc.mozCancelFullScreen) {
-        doc.mozCancelFullScreen();
-      } else if (doc.msExitFullscreen) {
-        doc.msExitFullscreen();
-      }
-    }
-  }
-
-  function handleCommentScroll() {
-    const commentBox = document.getElementById("comments");
-    if (commentBox) {
-      commentBox.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-    const desc = document.querySelector(".game-description");
-    if (desc) {
-      desc.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-  }
-
-  function initGameButtons() {
-    const shareBtn = document.getElementById("btnShare");
-    const fsBtn = document.getElementById("btnFullscreen");
-    const commentBtn = document.getElementById("btnComment");
-
-    if (shareBtn) {
-      shareBtn.addEventListener("click", handleShare);
-    }
-    if (fsBtn) {
-      fsBtn.addEventListener("click", handleFullscreen);
-    }
-    if (commentBtn) {
-      commentBtn.addEventListener("click", handleCommentScroll);
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", initGameButtons);
-})();
-
-// =========================
-// Recently played (localStorage)
-// =========================
-(function () {
-  const STORAGE_KEY = "recently_played";
-  const MAX_ITEMS = 20;
-
-  function addCurrentGameToHistory() {
-    const body = document.body;
-    const slug = body.dataset.slug;
-    if (!slug || typeof getGameBySlug !== "function") return;
-
-    const game = getGameBySlug(slug);
-    if (!game) return;
-
-    let list = [];
-    try {
-      list = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch (e) {
-      list = [];
-    }
-
-    list = list.filter((item) => item.slug !== slug);
-
-    list.unshift({
-      slug: slug,
-      ts: Date.now()
-    });
-
-    if (list.length > MAX_ITEMS) {
-      list = list.slice(0, MAX_ITEMS);
-    }
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  }
-
-  function renderRecentlyPlayed() {
-    const section = document.getElementById("recentlyPlayedSection");
-    const container = document.getElementById("recentlyPlayed");
-    if (!section || !container || typeof getGameBySlug !== "function") return;
-
-    let list = [];
-    try {
-      list = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch (e) {
-      list = [];
-    }
-
-    if (list.length === 0) {
-      section.style.display = "none";
-      return;
-    }
-
-    section.style.display = "";
-    container.innerHTML = "";
-    const frag = document.createDocumentFragment();
-
-    // Show max 3 recently played games
-    list.slice(0, 3).forEach((item) => {
-      const game = getGameBySlug(item.slug);
-      if (!game) return;
-
-      const a = document.createElement("a");
-      a.href = `/${game.slug}.html`;
-      a.className = "hot-item";
-
-      const thumbWrap = document.createElement("div");
-      thumbWrap.className = "hot-thumb-wrapper";
-
-      const img = document.createElement("img");
-      img.src = game.thumbnail;
-      img.loading = "lazy";
-      img.alt = `${game.title} thumbnail`;
-      img.className = "hot-thumb";
-
-      thumbWrap.appendChild(img);
-
-      const info = document.createElement("div");
-      info.className = "hot-info";
-
-      const titleEl = document.createElement("div");
-      titleEl.className = "hot-title";
-      titleEl.textContent = game.title;
-
-      const meta = document.createElement("div");
-      meta.className = "hot-meta";
-      meta.textContent = Array.isArray(game.categories)
-        ? game.categories.join(", ")
-        : "";
-
-      info.appendChild(titleEl);
-      info.appendChild(meta);
-
-      a.appendChild(thumbWrap);
-      a.appendChild(info);
-
-      frag.appendChild(a);
-    });
-
-    container.appendChild(frag);
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    if (document.body.dataset.slug) {
-      addCurrentGameToHistory();
-    }
-    if (document.body.dataset.pageType === "home") {
-      renderRecentlyPlayed();
-    }
-  });
-})();
-
-// =========================
-// Hot Games Rotator – show 6 of 10
-// =========================
-(function () {
-  const VISIBLE_COUNT = 6;
-
-  function initHotGamesRotator() {
-    const container = document.getElementById("hotGames");
-    if (!container) return;
-
-    const items = Array.from(container.querySelectorAll(".hot-item"));
-    const total = items.length;
-    if (total === 0) return;
-
-    if (total <= VISIBLE_COUNT) {
-      items.forEach((el) => el.classList.remove("is-hidden"));
-      return;
-    }
-
-    let index = 0;
-
-    function updateVisible() {
-      items.forEach((el, i) => {
-        const offset = (i - index + total) % total;
-        const visible = offset < VISIBLE_COUNT;
-        el.classList.toggle("is-hidden", !visible);
-      });
-    }
-
-    updateVisible();
-
-    setInterval(() => {
-      index = (index + 1) % total;
-      updateVisible();
-    }, 4000);
-  }
-
-  document.addEventListener("DOMContentLoaded", initHotGamesRotator);
-})();
-
-// =========================
-// Footer year
-// =========================
-(function () {
-  document.addEventListener("DOMContentLoaded", function () {
-    var yearSpan = document.querySelector("[data-year]");
-    if (yearSpan) {
-      yearSpan.textContent = new Date().getFullYear();
-    }
-  });
-})();
-
-// =======================
-// COMMENTS – Supabase backend (pending / approved)
-// =======================
-(function () {
-  const commentsSection = document.querySelector(".comments-section");
-  if (!commentsSection) return; // page without comments
-
-  const gameId = commentsSection.getAttribute("data-game-id") || "default";
-
-  const commentsListEl = document.getElementById("comments-list");
-  const commentCountEl = document.getElementById("comment-count");
-  const sortSelectEl = document.getElementById("comment-sort");
-
-  const commentFormEl = document.getElementById("comment-form");
-  const commentTextEl = document.getElementById("comment-text");
-  const commentNameEl = document.getElementById("comment-name");
-  const commentEmailEl = document.getElementById("comment-email");
-  const commentTermsEl = document.getElementById("comment-terms");
-  const errorEl = document.getElementById("comment-error");
-
-  // --- Supabase config (public anon key) ---
-  const SUPABASE_URL = "https://qrepgtwngjdzmbnopsdr.supabase.co";
-  const SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZXBndHduZ2pkem1ibm9wc2RyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzM0ODMsImV4cCI6MjA3OTY0OTQ4M30.TvX9J2aBQWAyAK225q2czsZN5fXz8Edj57XF7h3kIwA";
-
-  function setError(msg) {
-    if (!errorEl) return;
-    errorEl.textContent = msg || "";
-  }
-
-  // In–memory state for sorting
-  let commentsState = [];
-
-  function createCommentCard(c) {
-    const card = document.createElement("article");
-    card.className = "comment-card";
-
-    const avatar = document.createElement("div");
-    avatar.className = "comment-avatar";
-    avatar.textContent = c.name ? c.name.trim()[0].toUpperCase() : "?";
-
-    const content = document.createElement("div");
-    content.className = "comment-content";
-
-    const meta = document.createElement("div");
-    meta.className = "comment-meta";
-    meta.innerHTML = `
-      <span class="comment-name">${c.name || "Guest"}</span>
-      <span class="comment-time">${c.createdAt}</span>
-    `;
-
-    const text = document.createElement("p");
-    text.className = "comment-text";
-    text.textContent = c.text;
-
-    content.appendChild(meta);
-    content.appendChild(text);
-    card.appendChild(avatar);
-    card.appendChild(content);
-
-    return card;
-  }
-
-  function renderComments() {
-    commentsListEl.innerHTML = "";
-
-    if (!commentsState.length) {
-      commentsListEl.innerHTML =
-        '<div style="opacity:0.75;font-size:14px;">No comments yet.</div>';
-      commentCountEl.textContent = "(0)";
-      return;
-    }
-
-    commentsState.forEach((c) => {
-      commentsListEl.appendChild(createCommentCard(c));
-    });
-    commentCountEl.textContent = `(${commentsState.length})`;
-  }
-
-  function sortComments(mode) {
-    commentsState.sort((a, b) =>
-      mode === "oldest" ? a.createdAtMs - b.createdAtMs : b.createdAtMs - a.createdAtMs
-    );
-  }
-
-  async function loadApprovedComments() {
-    if (!commentsListEl || !commentCountEl) return;
-
-    commentsListEl.innerHTML =
-      '<div style="opacity:0.8;font-size:14px;">Loading comments...</div>';
-
-    try {
-      const url =
-        SUPABASE_URL +
-        `/rest/v1/comments?select=*` +
-        `&game_id=eq.${encodeURIComponent(gameId)}` +
-        `&status=eq.approved` +
-        `&order=created_at.desc`;
-
-      const res = await fetch(url, {
-        headers: {
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: "Bearer " + SUPABASE_ANON_KEY
-        }
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to fetch comments");
-      }
-
-      const data = await res.json();
-
-      commentsState = (data || []).map((row) => {
-        const ms = row.created_at ? new Date(row.created_at).getTime() : Date.now();
-        return {
-          id: row.id,
-          name: row.name || "Guest",
-          text: row.text || "",
-          createdAt: row.created_at
-            ? new Date(row.created_at).toLocaleString()
-            : "",
-          createdAtMs: ms
-        };
-      });
-
-      sortComments("newest");
-      renderComments();
-    } catch (err) {
-      console.error(err);
-      commentsListEl.innerHTML =
-        '<div style="color:#fecaca;font-size:14px;">Failed to load comments.</div>';
-      commentCountEl.textContent = "(0)";
-    }
-  }
-
-  function initSortSelect() {
-    if (!sortSelectEl) return;
-    sortSelectEl.addEventListener("change", function () {
-      sortComments(sortSelectEl.value || "newest");
-      renderComments();
-    });
-  }
-
-  function initSubmit() {
-    if (!commentFormEl) return;
-
-    commentFormEl.addEventListener("submit", async function (e) {
-      e.preventDefault();
-      setError("");
-
-      const text = (commentTextEl.value || "").trim();
-      const name = (commentNameEl.value || "").trim() || "Anonymous";
-      const email = (commentEmailEl.value || "").trim();
-
-      if (!text) {
-        setError("Please enter your comment.");
-        commentTextEl.focus();
-        return;
-      }
-
-      if (!commentTermsEl.checked) {
-        setError("Please agree to the terms and conditions before submitting.");
-        commentTermsEl.focus();
-        return;
-      }
-
-      const payload = {
-        game_id: gameId,
-        name,
-        email,
-        text,
-        status: "pending"
-      };
-
-      try {
-        const url = SUPABASE_URL + "/rest/v1/comments";
-        const res = await fetch(url, {
-          method: "POST",
-          headers: {
-            apikey: SUPABASE_ANON_KEY,
-            Authorization: "Bearer " + SUPABASE_ANON_KEY,
-            "Content-Type": "application/json",
-            Prefer: "return=minimal"
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to insert comment");
-        }
-
-        commentTextEl.value = "";
-        showToast("Thanks! Your comment is waiting for approval.");
-      } catch (err) {
-        console.error(err);
-        setError("Failed to submit comment. Please try again later.");
-      }
-    });
-  }
-
-  loadApprovedComments();
-  initSortSelect();
-  initSubmit();
-})();
-// =====================
-// Description collapse (500px + Show more / Show less)
-// =====================
-document.addEventListener("DOMContentLoaded", function () {
-  const desc = document.querySelector(".game-description");
-  const toggleBtn = document.getElementById("descToggle");
-  if (!desc || !toggleBtn) return;
-
-  const labelEl = toggleBtn.querySelector(".desc-toggle-label");
-  const iconEl = toggleBtn.querySelector(".desc-toggle-icon");
-  const COLLAPSED_HEIGHT = 500; // px — khớp với CSS
-
-  // Nếu nội dung thấp hơn 500px -> ẩn nút luôn
-  const realHeight = desc.scrollHeight;
-  if (realHeight <= COLLAPSED_HEIGHT + 5) {
-    toggleBtn.style.display = "none";
-    // Đảm bảo không bị cắt nội dung
-    desc.style.maxHeight = "none";
-    return;
-  }
-
-  let isExpanded = false;
-
-  function updateUI() {
-    if (isExpanded) {
-      desc.classList.add("is-expanded");
-      labelEl.textContent = "Show less";
-      iconEl.setAttribute("aria-hidden", "true");
-      toggleBtn.setAttribute("aria-expanded", "true");
-    } else {
-      desc.classList.remove("is-expanded");
-      labelEl.textContent = "Show more";
-      iconEl.setAttribute("aria-hidden", "true");
-      toggleBtn.setAttribute("aria-expanded", "false");
-
-      // Sau khi thu gọn, cuộn trang sao cho khối mô tả về vùng nhìn
-      const top = desc.offsetTop - 80;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-  }
-
-  // Thiết lập trạng thái đầu (thu gọn)
-  desc.style.maxHeight = COLLAPSED_HEIGHT + "px";
-  updateUI();
-
-  toggleBtn.addEventListener("click", function () {
-    isExpanded = !isExpanded;
-    updateUI();
-  });
-});
+  </script>
+
+  <link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+
+<body data-page-type="home">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="site-header-inner">
+
+      <a href="/" class="site-logo">
+        <div class="site-logo-icon">🍪</div>
+        <span>Cookie Clicker 2</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/clicker.games" class="nav-link">
+          <span class="dot"></span><span>Clicker Games</span>
+        </a>
+        <a href="/idle.games" class="nav-link">
+          <span class="dot"></span><span>Idle Games</span>
+        </a>
+        <a href="/io.games" class="nav-link">
+          <span class="dot"></span><span>IO Games</span>
+        </a>
+        <a href="/hot.games" class="nav-link">
+          <span class="dot"></span><span>Hot Games</span>
+        </a>
+      </nav>
+
+      <div class="header-right">
+        <!-- Search -->
+        <div id="searchWrapper" class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            id="searchInput"
+            type="search"
+            class="search-input"
+            placeholder="Search games..."
+            autocomplete="off"
+          />
+          <div id="searchResults" class="search-results"></div>
+        </div>
+
+        <!-- Theme toggle -->
+        <button id="themeToggle" class="theme-toggle" type="button">
+          <span class="icon">🌙</span><span>Theme</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="page-container">
+    <div class="layout">
+
+      <!-- MAIN COLUMN -->
+      <section class="main-content">
+
+        <!-- Breadcrumb (JS will handle) -->
+        <nav id="breadcrumb" class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <!-- FEATURED GAME: COOKIE CLICKER 2 -->
+        <article class="card game-section">
+
+          <!-- GAME FRAME -->
+          <div class="game-frame-outer">
+            <div class="game-frame-wrapper">
+              <iframe
+                src="https://games-online.io/game/cake-maker/"
+                class="game-frame"
+                title="Cookie Clicker 2"
+                allowfullscreen
+              ></iframe>
+            </div>
+          </div>
+
+          <!-- TITLE + META + BUTTONS -->
+          <header class="game-header-row">
+            <div class="game-header-left">
+              <h1 class="game-title">Cookie Clicker 2</h1>
+              <div class="game-meta">
+                <span>🎮 25,430 plays</span>
+                <span>⭐ 4.8 / 5.0</span>
+                <span>
+                  Category:
+                  <a class="game-meta-link" href="/clicker.games">Clicker</a>
+                </span>
+              </div>
+            </div>
+
+            <div class="game-actions game-actions-right">
+              <button id="btnComment" class="btn btn-primary" type="button" aria-label="Scroll to comments">
+                <span class="icon">💬</span><span>Comments</span>
+              </button>
+              <button id="btnShare" class="btn btn-ghost" type="button" aria-label="Copy game link">
+                <span class="icon">🔗</span><span>Share</span>
+              </button>
+              <button id="btnFullscreen" class="btn btn-ghost" type="button" aria-label="Toggle fullscreen mode">
+                <span class="icon">⛶</span><span>Fullscreen</span>
+              </button>
+            </div>
+          </header>
+
+        </article>
+
+        <!-- BLOCK: RELATED GAMES -->
+        <section class="card" style="margin-top:14px;">
+          <h2 class="section-title">Recommened For You</h2>
+          <!-- site.js will render 10 games: 5 clicker, 3 idle, 2 io -->
+          <div id="clickerGrid" class="game-grid"></div>
+        </section>
+
+        <!-- DESCRIPTION / SEO CONTENT HOME -->
+        <section class="card game-description" style="margin-top:14px;">
+          <h2>Game Overview</h2>
+          <p>
+            Cookie Clicker 2 is a relaxed idle clicker where a single tap on a giant cookie starts a
+            growing bakery empire powered by automated buildings and upgrades. Every cookie earned can be
+            reinvested into new assets, achievements and long term progression, turning a simple click
+            into an ever expanding cookie production machine.
+          </p>
+
+          <figure style="display:flex; justify-content:center; margin:18px 0;">
+            <img src="/assets/thumbs/cookie-clicker-2.png"
+                 alt="Cookie Clicker 2 game thumbnail"
+                 style="
+                   width:100%;
+                   max-width:340px;
+                   height:auto;
+                   border-radius:12px;
+                   object-fit:cover;
+                   box-shadow:0 8px 20px rgba(0,0,0,0.25);
+                 ">
+          </figure>
+
+          <h3>Core Idle Gameplay</h3>
+          <p>
+            The core loop is simple and satisfying. Clicking on the large cookie on the screen creates
+            cookies, which gradually unlock a shop filled with assets that generate cookies on their own.
+            Cursors, grandmas, farms, mines and factories continuously bake in the background while the
+            total climbs into bigger and bigger number scales.
+          </p>
+          <p>
+            Over time, upgrades enhance both manual clicks and passive production from each building.
+            This combination of tapping bursts and idle generation keeps progress moving forward whether
+            the player is actively clicking or letting the bakery run on its own for long sessions.
+          </p>
+
+          <h3>Buildings And Upgrades</h3>
+          <p>
+            Cookie Clicker 2 includes a lineup of buildings that form the foundation of the bakery.
+            Each one has a distinct base cost and cookies per second output, and additional copies of the
+            same building gradually increase in price. Choosing which structure to buy next becomes a
+            simple yet engaging resource decision.
+          </p>
+          <ul>
+            <li><strong>Cursor</strong> – the first automation tool, periodically clicking the main cookie.</li>
+            <li><strong>Grandma</strong> – experienced helpers who bake cookies every second.</li>
+            <li><strong>Farm</strong> – cookie plantations that yield multiple cookies per second.</li>
+            <li><strong>Mine</strong> – deep facilities extracting large amounts of cookie dough.</li>
+            <li><strong>Factory</strong> – industrial level production with powerful throughput.</li>
+            <li><strong>Bank</strong> – financial buildings storing and generating huge cookie values.</li>
+            <li><strong>Temple</strong> – high tier structure boosting very late game income.</li>
+          </ul>
+          <p>
+            On top of buildings, upgrades improve efficiency by increasing output per building,
+            multiplying click strength or unlocking new synergies. Many upgrades also contribute
+            toward achievements, which reward long term play and high cookie milestones.
+          </p>
+
+          <h3>Progression Phases</h3>
+          <p>
+            The experience in Cookie Clicker 2 can be viewed in several broad phases. Early on, single
+            clicks and the first few buildings represent a large portion of income, so decisions like
+            buying more grandmas or saving for a farm make a noticeable difference in growth speed.
+          </p>
+          <p>
+            In the mid game, passive income overtakes click income and the bakery can produce thousands
+            of cookies per second. It becomes practical to leave the game running while focusing on
+            other tasks, then return to spend accumulated cookies on new assets, upgrades and
+            achievements that unlock additional layers of progression.
+          </p>
+          <p>
+            Late game focuses on the most expensive buildings and high tier upgrades. Prestige and
+            ascension systems appear, allowing a reset of the current run in exchange for permanent
+            bonuses. These prestige levels make future runs faster as cookie production scales to
+            astronomical units like trillions, quadrillions and far beyond.
+          </p>
+
+          <h3>How To Play</h3>
+          <p>
+            Controls and rules in Cookie Clicker 2 are intentionally straightforward so attention can
+            stay on long term strategy rather than complex mechanics. Play sessions can last a few
+            minutes or stretch over many days, depending on how far the player wants to push their
+            cookie total.
+          </p>
+          <ul>
+            <li>Click or tap the giant cookie to generate one cookie per click at the start of the game.</li>
+            <li>Open the shop panel to purchase Cursors, Grandmas, Farms and other buildings with earned cookies.</li>
+            <li>Watch each building add cookies automatically every second while the counter rises in real time.</li>
+            <li>Buy upgrades to improve click strength, building output and overall production efficiency.</li>
+            <li>Continue investing in the most efficient assets to unlock new tiers, achievements and prestige options.</li>
+          </ul>
+          <p>
+            This balance between manual tapping and automated income turns each upgrade into a small
+            step forward that compounds over time and keeps the sense of progression steady and clear.
+          </p>
+
+          <h3>Tips And Strategies</h3>
+          <p>
+            Smart investments make a noticeable impact on long term growth. Comparing the cost of a
+            building with the cookies it adds per second can highlight which option currently offers
+            the best value. For example, an early Grandma that provides one cookie per second for a
+            modest price can outperform several Cursors when cost is divided by production.
+          </p>
+          <p>
+            As more copies of a building are purchased, the price rises, so the most efficient choice
+            can shift over time. It is often effective to spread purchases between Grandmas, Farms and
+            Mines in the early and mid stages instead of focusing only on one asset type. Later, large
+            purchases of Factories, Banks or Temples push production into new brackets.
+          </p>
+          <p>
+            In very long runs, letting the game idle while buildings work in the background becomes a
+            natural strategy. Periodically returning to reinvest cookies into upgrades, achievements and
+            prestige levels gradually transforms a small bakery into a multi layer cookie empire.
+          </p>
+
+          <h3>Game Features Summary</h3>
+          <ul>
+            <li>Relaxed idle gameplay focused on baking and upgrading cookies.</li>
+            <li>Multiple buildings with unique costs and cookies per second values.</li>
+            <li>Deep upgrade system that enhances both clicks and passive income.</li>
+            <li>Hundreds of achievements and milestones to chase over many sessions.</li>
+            <li>Free browser game with no download, sign in or intrusive ads.</li>
+          </ul>
+          <p>
+            Number scales grow from thousands through millions, billions and onwards into extremely
+            large units, capturing the feeling of an ever expanding bakery that never really runs out
+            of space to grow.
+          </p>
+
+          <h3>Frequently Asked Questions</h3>
+          <p>
+            <strong>Why is this game so popular?</strong><br />
+            Its appeal comes from a very simple core action that feeds into many layers of progression.
+            Clicking the cookie produces visible growth, and that growth unlocks more tools that make
+            the number increase even faster, creating a satisfying feedback loop.
+          </p>
+          <p>
+            <strong>Does Cookie Clicker 2 have an ending?</strong><br />
+            The game is designed as an endless idle experience. There are many achievements, upgrades
+            and prestige levels that feel like milestones, so players often set personal goals such as
+            reaching specific number thresholds or unlocking every upgrade on the list.
+          </p>
+          <p>
+            <strong>Is Cookie Clicker 2 free to play?</strong><br />
+            The game is available to play directly in the browser without any download or
+            registration. The experience is free and focuses on long term idle progression rather than
+            time limited sessions or paid advantages.
+          </p>
+          <p>
+            Whether the goal is to relax with a light idle game or to push production into the highest
+            possible number units, Cookie Clicker 2 offers a long running bakery that can grow for as
+            long as the player wants to keep baking.
+          </p>
+          <button id="descToggle" class="desc-toggle-btn" type="button">
+            <span class="desc-toggle-label">Show more</span>
+            <span class="desc-toggle-icon" aria-hidden="true">▼</span>
+          </button>
+        </section>
+
+    <!-- COMMENTS – Cookie Clicker 2 -->
+<section class="comments-section" id="comments" data-game-id="home">
+  <div class="comments-header-row">
+    <h3 class="comments-title">
+      Comments <span id="comment-count">(0)</span>
+    </h3>
+
+    <div class="comments-sort">
+      <label for="comment-sort">Sort:</label>
+      <select id="comment-sort">
+        <option value="newest">Newest</option>
+        <option value="oldest">Oldest</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="comments-divider"></div>
+
+  <div class="comments-list" id="comments-list">
+    <!-- JS will render approved comments from GitHub Issues -->
+  </div>
+
+  <form class="comment-form" id="comment-form" novalidate>
+    <div class="comment-input-row">
+      <input
+        type="text"
+        id="comment-text"
+        class="comment-input-main"
+        placeholder="Add comment"
+      />
+      <button type="submit" class="comment-send-btn" aria-label="Send comment">
+        &gt;
+      </button>
+    </div>
+
+    <input
+      type="text"
+      id="comment-name"
+      class="comment-input-sub"
+      placeholder="Name (optional)"
+      autocomplete="name"
+    />
+
+    <input
+      type="email"
+      id="comment-email"
+      class="comment-input-sub"
+      placeholder="Email (optional)"
+      autocomplete="email"
+    />
+
+    <label class="comment-terms">
+      <input type="checkbox" id="comment-terms" />
+      <span>I’ve read and agree to the terms and conditions.</span>
+    </label>
+
+    <!-- dòng báo lỗi nhỏ -->
+    <div id="comment-error" style="margin-top:6px;font-size:13px;color:#fecaca;"></div>
+  </form>
+</section>
+
+      </section>
+
+      <!-- SIDEBAR: HOT GAMES + RECENT -->
+      <aside class="sidebar">
+        <section class="card">
+          <h2 class="sidebar-title">Hot Games</h2>
+          <!-- site.js: getHotGames(10) + rotator shows 6 at a time -->
+          <div id="hotGames" class="hot-list"></div>
+        </section>
+
+        <section class="card" id="recentlyPlayedSection" style="display:none; margin-top:14px;">
+          <h2 class="sidebar-title">Recently played</h2>
+          <div id="recentlyPlayed" class="hot-list"></div>
+        </section>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <div>© <span data-year></span> Cookie Clicker 2 Game</div>
+      <nav class="footer-links">
+        <a href="/about.html">About Us</a>
+        <a href="/contact.html">Contact Us</a>
+        <a href="/privacy-policy.html">Privacy Policy</a>
+        <a href="/terms-of-use.html">Terms of Use</a>
+        <a href="/dmca.html">DMCA</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- JS -->
+  <script src="/assets/js/games-data.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
+</body>
+</html>
