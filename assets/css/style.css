@@ -1677,7 +1677,7 @@ body.light .comment-error {
 .game-description {
   position: relative;
   overflow: hidden;
-  max-height: 320px;   /* <<< kiểm soát chiều cao phần hiển thị */
+  max-height: 500px;   /* <<< kiểm soát chiều cao phần hiển thị */
   transition: max-height 0.35s ease;
 }
 
