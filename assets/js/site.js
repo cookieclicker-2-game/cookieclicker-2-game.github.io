@@ -1023,22 +1023,52 @@
   initSubmit();
 })();
 // =====================
-// Description collapse
+// Description collapse (500px + Show more / Show less)
 // =====================
 document.addEventListener("DOMContentLoaded", function () {
   const desc = document.querySelector(".game-description");
   const toggleBtn = document.getElementById("descToggle");
   if (!desc || !toggleBtn) return;
 
-  toggleBtn.addEventListener("click", () => {
-    desc.classList.toggle("expanded");
+  const labelEl = toggleBtn.querySelector(".desc-toggle-label");
+  const iconEl = toggleBtn.querySelector(".desc-toggle-icon");
+  const COLLAPSED_HEIGHT = 500; // px — khớp với CSS
 
-    if (desc.classList.contains("expanded")) {
-      toggleBtn.textContent = "Show less ▲";
+  // Nếu nội dung thấp hơn 500px -> ẩn nút luôn
+  const realHeight = desc.scrollHeight;
+  if (realHeight <= COLLAPSED_HEIGHT + 5) {
+    toggleBtn.style.display = "none";
+    // Đảm bảo không bị cắt nội dung
+    desc.style.maxHeight = "none";
+    return;
+  }
+
+  let isExpanded = false;
+
+  function updateUI() {
+    if (isExpanded) {
+      desc.classList.add("is-expanded");
+      labelEl.textContent = "Show less";
+      iconEl.setAttribute("aria-hidden", "true");
+      toggleBtn.setAttribute("aria-expanded", "true");
     } else {
-      toggleBtn.textContent = "Show more ▼";
-      window.scrollTo({ top: desc.offsetTop - 80, behavior: "smooth" });
+      desc.classList.remove("is-expanded");
+      labelEl.textContent = "Show more";
+      iconEl.setAttribute("aria-hidden", "true");
+      toggleBtn.setAttribute("aria-expanded", "false");
+
+      // Sau khi thu gọn, cuộn trang sao cho khối mô tả về vùng nhìn
+      const top = desc.offsetTop - 80;
+      window.scrollTo({ top, behavior: "smooth" });
     }
+  }
+
+  // Thiết lập trạng thái đầu (thu gọn)
+  desc.style.maxHeight = COLLAPSED_HEIGHT + "px";
+  updateUI();
+
+  toggleBtn.addEventListener("click", function () {
+    isExpanded = !isExpanded;
+    updateUI();
   });
 });
-
