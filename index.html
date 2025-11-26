@@ -441,5 +441,16 @@
   <!-- JS -->
   <script src="/assets/js/games-data.js" defer></script>
   <script src="/assets/js/site.js" defer></script>
+  <!-- Netlify Identity widget: dùng để handle invite_token / recovery_token -->
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+  if (window.netlifyIdentity) {
+    // Sau khi login xong thì chuyển sang /admin
+    window.netlifyIdentity.on("login", () => {
+      document.location.href = "/admin/";
+    });
+  }
+</script>
+  
 </body>
 </html> 
