@@ -1,4 +1,3 @@
-
 // /assets/js/site.js
 
 // =========================
@@ -1023,5 +1022,22 @@
   initSortSelect();
   initSubmit();
 })();
+// =====================
+// Description collapse
+// =====================
+document.addEventListener("DOMContentLoaded", function () {
+  const desc = document.querySelector(".game-description");
+  const toggleBtn = document.getElementById("descToggle");
+  if (!desc || !toggleBtn) return;
 
+  toggleBtn.addEventListener("click", () => {
+    desc.classList.toggle("expanded");
+
+    if (desc.classList.contains("expanded")) {
+      toggleBtn.textContent = "Show less ▲";
+    } else {
+      toggleBtn.textContent = "Show more ▼";
+      window.scrollTo({ top: desc.offsetTop - 80, behavior: "smooth" });
+    }
+  });
 });
