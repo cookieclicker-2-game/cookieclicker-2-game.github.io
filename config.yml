@@ -1,0 +1,39 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: "games"
+    label: "Games"
+    folder: "content/games"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { name: "title", label: "Title", widget: "string" }
+      - { name: "slug", label: "Slug", widget: "string" }
+      - { name: "description", label: "Description", widget: "text" }
+
+      - label: "Categories"
+        name: "categories"
+        widget: "select"
+        multiple: true
+        options:
+          - { label: "Clicker", value: "clicker" }
+          - { label: "Idle", value: "idle" }
+          - { label: "IO", value: "io" }
+          - { label: "Hot", value: "hot" }
+          - { label: "Skill", value: "skill" }
+          - { label: "Arcade", value: "arcade" }
+
+      - { name: "tags", label: "Tags", widget: "list", required: false }
+      - { name: "thumbnail", label: "Thumbnail", widget: "image" }
+      - { name: "previewVideo", label: "Preview Video URL", widget: "string", required: false }
+      - { name: "lastUpdated", label: "Last Updated", widget: "datetime" }
+      - { name: "plays", label: "Plays", widget: "number", required: false }
+      - { name: "rating", label: "Rating", widget: "number", min: 0, max: 5, required: false }
+      - { name: "iframeUrl", label: "Game iframe URL", widget: "string" }
+
+      - { name: "body", label: "Content", widget: "markdown" }
