@@ -805,6 +805,84 @@
 
   document.addEventListener("DOMContentLoaded", initHotGamesRotator);
 })();
+// =========================
+// New Games (home + /new.games + /all.games)
+// =========================
+(function () {
+  function createGridCard(game) {
+    const a = document.createElement("a");
+    a.href = `/${game.slug}.html`;
+    a.className = "game-card";
+
+    const thumb = document.createElement("div");
+    thumb.className = "game-card-thumb";
+
+    const img = document.createElement("img");
+    img.src = game.thumbnail;
+    img.loading = "lazy";
+    img.alt = (game.title || "Game") + " thumbnail";
+
+    thumb.appendChild(img);
+
+    const body = document.createElement("div");
+    body.className = "game-card-body";
+
+    const titleEl = document.createElement("h3");
+    titleEl.className = "game-card-title";
+    titleEl.textContent = game.title || "Untitled";
+
+    body.appendChild(titleEl);
+    a.appendChild(thumb);
+    a.appendChild(body);
+
+    return a;
+  }
+
+  function renderGrid(containerId, games) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = "";
+    const frag = document.createDocumentFragment();
+    games.forEach((g) => frag.appendChild(createGridCard(g)));
+    container.appendChild(frag);
+  }
+
+  // fallback nếu chưa có getLatestGames
+  function getLatestFallback(limit) {
+    if (typeof getLatestGames === "function") {
+      return getLatestGames(limit);
+    }
+    if (!Array.isArray(GAMES)) return [];
+    const arr = GAMES.slice().reverse();
+    return arr.slice(0, limit);
+  }
+
+  function initNewGames() {
+    const body = document.body;
+    const pageType = body.dataset.pageType || "";
+
+    // Home: 10 game mới nhất
+    if (pageType === "home" && document.getElementById("newGamesGrid")) {
+      const games = getLatestFallback(10);
+      renderGrid("newGamesGrid", games);
+    }
+
+    // Trang /new.games: 20 game mới
+    if (pageType === "new" && document.getElementById("newGamesPageGrid")) {
+      const games = getLatestFallback(20);
+      renderGrid("newGamesPageGrid", games);
+    }
+
+    // Trang /all.games: tất cả game
+    if (pageType === "all" && document.getElementById("allGamesGrid")) {
+      if (Array.isArray(GAMES)) {
+        renderGrid("allGamesGrid", GAMES);
+      }
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", initNewGames);
+})();
 
 // =========================
 // Footer year
